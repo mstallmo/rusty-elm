@@ -9,8 +9,8 @@ mod utils;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-extern {
-    #[wasm_bindgen(js_namespace=console)]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
     fn log(msg: &str);
 }
 
@@ -20,4 +20,3 @@ pub fn hello() {
 
     log("Hellooo from Rust");
 }
-
