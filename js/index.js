@@ -7,7 +7,6 @@ import("../crate/pkg").then(module => {
   app.ports.hello.subscribe(() => {
     console.log("Hello with Elm Ports!");
     alert("I'm an annoying alert!");
+    module.hello();
   });
-
-  module.run();
 });
