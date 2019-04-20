@@ -10,9 +10,24 @@ main =
     Browser.element { init = \() -> initialModel, view = view, update = update, subscriptions = subscriptions }
 
 
+
+-- SUBSCRIPTIONS
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
+
+
+-- PORTS
+
+
+port hello : () -> Cmd a
+
+
+
+-- MODEL
 
 
 type alias Model =
@@ -22,6 +37,10 @@ type alias Model =
 initialModel : ( Model, Cmd Msg )
 initialModel =
     ( { count = 0 }, Cmd.none )
+
+
+
+-- UPDATE
 
 
 type Msg
@@ -43,6 +62,10 @@ update msg model =
             ( model, hello () )
 
 
+
+-- VIEW
+
+
 view : Model -> Html Msg
 view model =
     div []
@@ -53,6 +76,3 @@ view model =
         , br [] []
         , button [ onClick SayHello ] [ text "Say Hello!" ]
         ]
-
-
-port hello : () -> Cmd a

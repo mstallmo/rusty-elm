@@ -1,12 +1,12 @@
 [package]
-authors = ["The RustWasm Developers"]
+authors = ["Mason Stallmo <masonstallmo@gmial.com>"]
 categories = ["wasm"]
-description = "My super awesome Rust, WebAssembly, and Webpack project!"
+description = "Test Module for WASM"
 license = "Apache-2.0/MIT"
-name = "rust-webpack"
+name = "rusty-elm"
 readme = "./README.md"
 repository = "https://github.com/rustwasm/rust-webpack-template"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2018"
 
 [lib]
@@ -25,16 +25,6 @@ console_error_panic_hook = { version = "0.1.5", optional = true }
 # compared to the default allocator's ~10K. It is slower than the default
 # allocator, however.
 wee_alloc = { version = "0.4.2", optional = true }
-
-[dependencies.web-sys]
-version = "0.3"
-features = [
-  "Document",
-  "Element",
-  "HtmlElement",
-  "Node",
-  "Window",
-]
 
 [features]
 default = ["console_error_panic_hook"]

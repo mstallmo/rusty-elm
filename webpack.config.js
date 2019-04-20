@@ -1,8 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-
-const dist = path.resolve(__dirname, "dist");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin/plugin");
+const dist = path.resolve(__dirname, "dist");
 
 module.exports = {
   entry: "./js/index.js",
@@ -28,7 +27,7 @@ module.exports = {
     rules: [
       {
         test: /\.elm$/,
-        exclude: [/elm-stuff/ ,/node-modules/],
+        exclude: [/elm-stuff/, /node-modules/],
         loader: 'elm-webpack-loader',
         options: {
           debug: true
