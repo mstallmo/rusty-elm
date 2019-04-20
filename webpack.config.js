@@ -23,5 +23,17 @@ module.exports = {
       // WasmPackPlugin defaults to compiling in "dev" profile. To change that, use forceMode: 'release':
       // forceMode: 'release'
     }),
-  ]
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.elm$/,
+        exclude: [/elm-stuff/ ,/node-modules/],
+        loader: 'elm-webpack-loader',
+        options: {
+          debug: true
+        }
+      }
+    ]
+  }
 };
