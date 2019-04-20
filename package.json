@@ -4,7 +4,10 @@
   "version": "0.2.0",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "start": "webpack-dev-server -d",
+    "start:dev": "webpack-dev-server -d",
+    "start": "npm run build:client & npm run build:server",
+    "build:client": "webpack -w",
+    "build:server": "cargo run --manifest-path server/Cargo.toml",
     "build": "webpack",
     "build:elm": "elm make elm/Main.elm --output=.build/main.js"
   },

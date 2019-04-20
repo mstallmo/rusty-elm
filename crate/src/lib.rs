@@ -14,7 +14,6 @@ extern {
     fn log(msg: &str);
 }
 
-// Called by our JS entry point to run the example.
 #[wasm_bindgen]
 pub fn hello() {
     utils::set_panic_hook();

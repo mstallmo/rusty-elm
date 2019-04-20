@@ -8,3 +8,4 @@ crate/Cargo.lock
 .idea
 elm-stuff
 .build
+server/target

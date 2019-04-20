@@ -1,7 +1,7 @@
 port module Main exposing (main)
 
 import Browser
-import Html exposing (Html, br, button, div, text)
+import Html exposing (Html, br, button, div, h1, p, text)
 import Html.Events exposing (onClick)
 
 
@@ -75,4 +75,6 @@ view model =
         , br [] []
         , br [] []
         , button [ onClick SayHello ] [ text "Say Hello!" ]
+        , h1 [] [ text "Hiiii" ]
+        , p [] [ text "Hellooo there I'm a <p> tag written in Elm" ]
         ]
