@@ -4,7 +4,7 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin/plugin");
 const dist = path.resolve(__dirname, "dist");
 
 module.exports = {
-  entry: "./js/index.js",
+  entry: "./js/bootstrap.js",
   mode: 'development',
   output: {
     path: dist,
@@ -15,7 +15,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'index.html'
+      template: './static/index.html'
     }),
 
     new WasmPackPlugin({

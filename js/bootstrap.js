@@ -1,0 +1,1 @@
+import('../reason/Index.bs').catch(error => console.error("Error loading module: ", error));

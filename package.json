@@ -1,18 +1,21 @@
 {
   "author": "Mason Stallmo <masonstallmo@gmail.com>",
   "name": "rusty-elm",
-  "version": "0.2.0",
+  "version": "0.0.1",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "start:dev": "webpack-dev-server -d",
+    "start:dev": "webpack-dev-server -d && bsb -make-world -w",
     "start": "npm run build:client & npm run build:server",
-    "build:client": "webpack -w",
+    "build:client": "bsb -make-world -w && webpack -w",
     "build:server": "cargo run --manifest-path server/Cargo.toml",
-    "build": "webpack",
-    "build:elm": "elm make elm/Main.elm --output=.build/main.js"
+    "build": "webpack && cargo build --manifest-path server/Cargo.toml",
+    "build:elm": "elm make elm/Main.elm --output=.build/main.js",
+    "build:reason": "bsb -make-world",
+    "webpack": "webpack"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "0.2.7",
+    "bs-platform": "^5.0.3",
     "elm-webpack-loader": "^5.0.0",
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.30.0",

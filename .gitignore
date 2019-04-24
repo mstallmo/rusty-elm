@@ -9,3 +9,6 @@ crate/Cargo.lock
 elm-stuff
 .build
 server/target
+.merlin
+.bsb.lock
+/lib/bs/
