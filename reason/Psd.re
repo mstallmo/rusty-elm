@@ -1,0 +1,1 @@
+[@bs.module "../crate/pkg/rusty_elm"] external hello: unit => unit = "hello";

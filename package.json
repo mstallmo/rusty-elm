@@ -4,14 +4,15 @@
   "version": "0.0.1",
   "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "start:dev": "webpack-dev-server -d && bsb -make-world -w",
-    "start": "npm run build:client & npm run build:server",
-    "build:client": "bsb -make-world -w && webpack -w",
-    "build:server": "cargo run --manifest-path server/Cargo.toml",
-    "build": "webpack && cargo build --manifest-path server/Cargo.toml",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "bsb -make-world & NODE_ENV=production webpack",
+    "build:server": "cargo build --release --manifest-path server/Cargo.toml",
     "build:elm": "elm make elm/Main.elm --output=.build/main.js",
     "build:reason": "bsb -make-world",
-    "webpack": "webpack"
+    "clean": "bsb -clean-world",
+    "develop:client": "webpack-dev-server -d && bsb -make-world -w",
+    "develop:server": "cargo run --manifest-path server/Cargo.toml",
+    "start": "npm run develop:server & npm run develop:client"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "0.2.7",

@@ -68,7 +68,7 @@ update msg model =
             ( model, hello () )
 
         FetchSomething ->
-            ( model, Http.get { url = "http://localhost:8080/api/hello", expect = Http.expectString GotText } )
+            ( model, Http.get { url = "http://localhost:8081/api/v1/hello", expect = Http.expectString GotText } )
 
         GotText result ->
             case result of
