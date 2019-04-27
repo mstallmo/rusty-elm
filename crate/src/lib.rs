@@ -1,4 +1,7 @@
+use psd::Psd;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::Clamped;
+use web_sys;
 
 mod utils;
 
@@ -19,4 +22,18 @@ pub fn hello() {
     utils::set_panic_hook();
 
     log("Hellooo from Rust");
+}
+
+#[wasm_bindgen]
+pub fn render_psd(array_buffer: &mut [u8]) -> web_sys::ImageData {
+    let psd = Psd::from_bytes(array_buffer).unwrap();
+
+    let mut psd_pixels = psd.flatten_layers_rgba(&|(_idx, _layer)| true).unwrap();
+
+    let psd_pixels = Clamped(&mut psd_pixels[..]);
+
+    log("About to send back image data");
+
+    web_sys::ImageData::new_with_u8_clamped_array_and_sh(psd_pixels, psd.width(), psd.height())
+        .unwrap()
 }

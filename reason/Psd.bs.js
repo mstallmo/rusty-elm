@@ -7,8 +7,13 @@ function hello(prim) {
   return /* () */0;
 }
 
+function renderPsd(prim) {
+  return Rusty_elm.render_psd(prim);
+}
+
 export {
   hello ,
+  renderPsd ,
   
 }
 /* ../crate/pkg/rusty_elm Not a pure module */

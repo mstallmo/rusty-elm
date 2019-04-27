@@ -13,9 +13,15 @@ Elm$ReasonableRustyElm.newApp.ports.hello.subscribe((function (param) {
 
 Elm$ReasonableRustyElm.newApp.ports.renderImage.subscribe((function (imageUrl) {
         var decodedString = atob(imageUrl.split(",")[1]);
+        var stringArray = Array.from(decodedString);
         var arrayBuffer = new Uint8Array(decodedString.length);
+        stringArray.map((function (element, index) {
+                arrayBuffer[index] = decodedString.charCodeAt(index) | 0;
+                return element;
+              }));
         console.log(arrayBuffer);
-        return Curry._2(Render$ReasonableRustyElm.renderPsd, imageUrl, "canvas");
+        var parsedDocument = Psd$ReasonableRustyElm.renderPsd(arrayBuffer);
+        return Curry._2(Render$ReasonableRustyElm.renderPsd, parsedDocument, "canvas");
       }));
 
 export {

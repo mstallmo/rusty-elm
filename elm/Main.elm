@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Element exposing (Element, centerX, centerY, column, el, html, padding, paddingXY, rgb255, row, spacing, text)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import Element.Region as Region
@@ -133,8 +134,8 @@ elementRow model =
 
 imageColumn : Element Msg
 imageColumn =
-    column []
-        [ el [] (html <| canvas [ id "canvas", width 995, height 585 ] [])
+    column [ Background.color (rgb255 128 128 128) ]
+        [ el [] (html <| canvas [ id "canvas", width 1920, height 1080 ] [])
         , el [] (html <| input [ type_ "file", name "image", multiple False, id "ImageInput", on "change" (Json.map SelectedFile filesDecoder) ] [])
         ]
 

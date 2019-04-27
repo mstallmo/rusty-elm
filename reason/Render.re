@@ -1,4 +1,4 @@
-let renderPsd: (string, string) => unit = [%raw
+let renderImageWithDataUrl: (string, string) => unit = [%raw
   {|(dataUrl, id) => {
 
     const canvas = document.getElementById(id);
@@ -11,4 +11,12 @@ let renderPsd: (string, string) => unit = [%raw
         ctx.drawImage(img, 0, 0);
     }
   }|}
+];
+
+let renderPsd: (Webapi.Dom.Image.t, string) => unit = [%raw
+  {|(imageData, id) => {
+        const canvas = document.getElementById(id);
+        const ctx = canvas.getContext('2d');
+        ctx.putImageData(imageData, 0, 0);
+    }|}
 ];
