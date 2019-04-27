@@ -1,5 +1,5 @@
 /*
-     Initialize an Elm application and setup any ports needed
+      Initialize an Elm application and setup any ports needed
  */
 
 type document;
@@ -17,5 +17,8 @@ let newApp = init(elmInit(~node=getElementById(doc, "elm")));
 
 module Ports = {
   [@bs.send] [@bs.scope ("ports", "hello")]
-  external subscribe: (app, unit => unit) => unit = "";
+  external hello: (app, unit => unit) => unit = "subscribe";
+
+  [@bs.send] [@bs.scope ("ports", "renderImage")]
+  external renderImage: (app, string => unit) => unit = "subscribe";
 };

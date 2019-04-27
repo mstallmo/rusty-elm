@@ -5,8 +5,13 @@ import Element exposing (Element, centerX, centerY, column, el, html, padding, p
 import Element.Border as Border
 import Element.Input as Input
 import Element.Region as Region
-import Html exposing (Html, canvas)
+import File exposing (File)
+import Html exposing (Html, canvas, input)
+import Html.Attributes exposing (height, id, multiple, name, type_, width)
+import Html.Events exposing (on)
 import Http
+import Json.Decode as Json
+import Task
 
 
 main : Program () Model Msg
@@ -30,17 +35,24 @@ subscriptions _ =
 port hello : () -> Cmd a
 
 
+port renderImage : String -> Cmd a
+
+
 
 -- MODEL
 
 
+type alias SelectedFile =
+    List File
+
+
 type alias Model =
-    { count : Int, serverResponse : String }
+    { count : Int, serverResponse : String, selectedFile : SelectedFile }
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { count = 0, serverResponse = "" }, Cmd.none )
+    ( { count = 0, serverResponse = "", selectedFile = [] }, Cmd.none )
 
 
 
@@ -53,6 +65,8 @@ type Msg
     | SayHello
     | FetchSomething
     | GotText (Result Http.Error String)
+    | SelectedFile (List File)
+    | GotFile String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -78,6 +92,22 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        SelectedFile files ->
+            ( { model | selectedFile = files }, List.head files |> extractFile )
+
+        GotFile file ->
+            ( model, renderImage file )
+
+
+extractFile : Maybe File -> Cmd Msg
+extractFile maybeFile =
+    case maybeFile of
+        Just file ->
+            Task.perform GotFile <| File.toUrl file
+
+        Nothing ->
+            Cmd.none
+
 
 
 -- VIEW
@@ -86,7 +116,10 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Element.layout [] <|
-        elementRow model
+        column [ spacing 100 ]
+            [ elementRow model
+            , row [] [ imageColumn ]
+            ]
 
 
 elementRow : Model -> Element Msg
@@ -95,7 +128,14 @@ elementRow model =
         [ counterColumn model
         , fetchColumn model
         , Input.button [] { onPress = Just SayHello, label = text "Say Hello" }
-        , el [] (html <| canvas [] [])
+        ]
+
+
+imageColumn : Element Msg
+imageColumn =
+    column []
+        [ el [] (html <| canvas [ id "canvas", width 995, height 585 ] [])
+        , el [] (html <| input [ type_ "file", name "image", multiple False, id "ImageInput", on "change" (Json.map SelectedFile filesDecoder) ] [])
         ]
 
 
@@ -159,17 +199,6 @@ fetchFromServerButton =
         { onPress = Just FetchSomething, label = text "Get Some Shit From The Server" }
 
 
-
---    el []
---        [ button [ onClick Increment ] [ text "+" ]
---        , div [] [ text <| String.fromInt model.count ]
---        , button [ onClick Decrement ] [ text "-" ]
---        , br [] []
---        , br [] []
---        , button [ onClick SayHello ] [ text "Say Hello!" ]
---        , h1 [] [ text "Hiiii" ]
---        , p [] [ text "Hellooo there I'm a <p> tag written in Elm" ]
---        , button [ onClick FetchSomething ] [ text "Get Some Shit From The Server" ]
---        , h2 [] [ text model.serverResponse ]
---        , h2 [] [ text "I just want to write some Elm!" ]
---        ]
+filesDecoder : Json.Decoder (List File)
+filesDecoder =
+    Json.at [ "target", "files" ] (Json.list File.decoder)
