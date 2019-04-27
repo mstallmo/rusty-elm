@@ -2,17 +2,11 @@
 
 import * as Rusty_elm from "../crate/pkg/rusty_elm";
 
-function hello(prim) {
-  Rusty_elm.hello();
-  return /* () */0;
-}
-
 function renderPsd(prim) {
   return Rusty_elm.render_psd(prim);
 }
 
 export {
-  hello ,
   renderPsd ,
   
 }

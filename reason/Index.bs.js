@@ -5,12 +5,6 @@ import * as Elm$ReasonableRustyElm from "./Elm.bs.js";
 import * as Psd$ReasonableRustyElm from "./Psd.bs.js";
 import * as Render$ReasonableRustyElm from "./Render.bs.js";
 
-Elm$ReasonableRustyElm.newApp.ports.hello.subscribe((function (param) {
-        Psd$ReasonableRustyElm.hello(/* () */0);
-        console.log("Calling this port from ReasonML");
-        return /* () */0;
-      }));
-
 Elm$ReasonableRustyElm.newApp.ports.renderImage.subscribe((function (imageUrl) {
         var decodedString = atob(imageUrl.split(",")[1]);
         var stringArray = Array.from(decodedString);

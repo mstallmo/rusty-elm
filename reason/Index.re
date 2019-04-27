@@ -1,11 +1,3 @@
-Elm.Ports.hello(
-  Elm.newApp,
-  () => {
-    Psd.hello();
-    Js.log("Calling this port from ReasonML");
-  },
-);
-
 /*let fillArrayBufferFromString =
       (decodedString: string, arrayBuffer: Uint8Array.t) => {
     Uint8Array.mapi(

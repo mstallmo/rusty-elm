@@ -1,7 +1,7 @@
 port module Main exposing (main)
 
 import Browser
-import Element exposing (Element, centerX, centerY, column, el, html, padding, paddingXY, rgb255, row, spacing, text)
+import Element exposing (Element, centerY, column, el, html, padding, paddingXY, rgb255, row, spacing, text)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
@@ -33,9 +33,6 @@ subscriptions _ =
 -- PORTS
 
 
-port hello : () -> Cmd a
-
-
 port renderImage : String -> Cmd a
 
 
@@ -43,17 +40,17 @@ port renderImage : String -> Cmd a
 -- MODEL
 
 
-type alias SelectedFile =
+type alias SelectedFiles =
     List File
 
 
 type alias Model =
-    { count : Int, serverResponse : String, selectedFile : SelectedFile }
+    { count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String }
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { count = 0, serverResponse = "", selectedFile = [] }, Cmd.none )
+    ( { count = 0, serverResponse = "", selectedFiles = [], selectedFile = "" }, Cmd.none )
 
 
 
@@ -61,28 +58,16 @@ initialModel =
 
 
 type Msg
-    = Increment
-    | Decrement
-    | SayHello
-    | FetchSomething
+    = SaveImage
     | GotText (Result Http.Error String)
-    | SelectedFile (List File)
-    | GotFile String
+    | SelectedFiles (List File)
+    | SelectedFile String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            ( { model | count = model.count + 1 }, Cmd.none )
-
-        Decrement ->
-            ( { model | count = model.count - 1 }, Cmd.none )
-
-        SayHello ->
-            ( model, hello () )
-
-        FetchSomething ->
+        SaveImage ->
             ( model, Http.get { url = "http://localhost:8081/api/v1/hello", expect = Http.expectString GotText } )
 
         GotText result ->
@@ -93,18 +78,18 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
-        SelectedFile files ->
-            ( { model | selectedFile = files }, List.head files |> extractFile )
+        SelectedFiles files ->
+            ( { model | selectedFiles = files }, List.head files |> extractFile )
 
-        GotFile file ->
-            ( model, renderImage file )
+        SelectedFile file ->
+            ( { model | selectedFile = file }, renderImage file )
 
 
 extractFile : Maybe File -> Cmd Msg
 extractFile maybeFile =
     case maybeFile of
         Just file ->
-            Task.perform GotFile <| File.toUrl file
+            Task.perform SelectedFile <| File.toUrl file
 
         Nothing ->
             Cmd.none
@@ -117,7 +102,7 @@ extractFile maybeFile =
 view : Model -> Html Msg
 view model =
     Element.layout [] <|
-        column [ spacing 100 ]
+        column [ spacing 20 ]
             [ elementRow model
             , row [] [ imageColumn ]
             ]
@@ -125,10 +110,19 @@ view model =
 
 elementRow : Model -> Element Msg
 elementRow model =
-    row [ spacing 40, centerX, paddingXY 0 40 ]
-        [ counterColumn model
-        , fetchColumn model
-        , Input.button [] { onPress = Just SayHello, label = text "Say Hello" }
+    row [ spacing 20 ]
+        [ el []
+            (html <|
+                input
+                    [ type_ "file"
+                    , name "image"
+                    , multiple False
+                    , id "ImageInput"
+                    , on "change" (Json.map SelectedFiles filesDecoder)
+                    ]
+                    []
+            )
+        , fetchRow model
         ]
 
 
@@ -136,49 +130,13 @@ imageColumn : Element Msg
 imageColumn =
     column [ Background.color (rgb255 128 128 128) ]
         [ el [] (html <| canvas [ id "canvas", width 1920, height 1080 ] [])
-        , el [] (html <| input [ type_ "file", name "image", multiple False, id "ImageInput", on "change" (Json.map SelectedFile filesDecoder) ] [])
         ]
 
 
-counterColumn : Model -> Element Msg
-counterColumn model =
-    column [ spacing 30, centerY ]
-        [ incrementButton
-        , el [ centerX ] (text <| String.fromInt model.count)
-        , decrementButton
-        ]
-
-
-incrementButton : Element Msg
-incrementButton =
-    Input.button
-        [ Border.color (rgb255 0 0 0)
-        , Border.solid
-        , Border.rounded 40
-        , Border.width 1
-        , padding 10
-        , centerX
-        ]
-        { onPress = Just Increment, label = text "+" }
-
-
-decrementButton : Element Msg
-decrementButton =
-    Input.button
-        [ Border.color (rgb255 0 0 0)
-        , Border.solid
-        , Border.rounded 40
-        , Border.width 1
-        , padding 10
-        , centerX
-        ]
-        { onPress = Just Decrement, label = text "-" }
-
-
-fetchColumn : Model -> Element Msg
-fetchColumn model =
-    column [ spacing 30, centerY ]
-        [ fetchResultLabel model, fetchFromServerButton ]
+fetchRow : Model -> Element Msg
+fetchRow model =
+    row [ spacing 30, paddingXY 0 20 ]
+        [ fetchFromServerButton, fetchResultLabel model ]
 
 
 fetchResultLabel : Model -> Element msg
@@ -197,7 +155,7 @@ fetchFromServerButton =
         , padding 5
         , centerY
         ]
-        { onPress = Just FetchSomething, label = text "Get Some Shit From The Server" }
+        { onPress = Just SaveImage, label = text "Save" }
 
 
 filesDecoder : Json.Decoder (List File)

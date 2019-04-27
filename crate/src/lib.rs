@@ -18,13 +18,6 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn hello() {
-    utils::set_panic_hook();
-
-    log("Hellooo from Rust");
-}
-
-#[wasm_bindgen]
 pub fn render_psd(array_buffer: &mut [u8]) -> web_sys::ImageData {
     let psd = Psd::from_bytes(array_buffer).unwrap();
 
