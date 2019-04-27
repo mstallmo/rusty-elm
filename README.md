@@ -1,34 +1,11 @@
-# 🦀🕸 `rust-webpack-template`
+# Rusty Elm
 
-> **Kickstart your Rust, WebAssembly, and Webpack project!**
+A project exploring a functional based web application stack. This project is an expirament to see what it would be like to develop an application in static typed functional or functional inspired languages. While this may end up being a little unpractical the aim is to see what the world of web app development would be like with as little JS as possible. 
 
-This template is designed for creating monorepo-style Web applications with
-Rust-generated WebAssembly and Webpack without publishing your wasm to NPM.
+This application is a sample web based photoshop document editor that let's you render `.psd` files as well as select the visible layers of a specific document.
 
-[**📚 Read this template tutorial! 📚**][template-docs]
-
-Be sure to check out [other `wasm-pack` tutorials online][tutorials] for other
-templates and usages of `wasm-pack`.
-
-[tutorials]: https://rustwasm.github.io/docs/wasm-pack/tutorials/index.html
-[template-docs]: https://rustwasm.github.io/docs/wasm-pack/tutorials/hybrid-applications-with-webpack/index.html
-
-## 🚴 Using This Template
-
-You can use `npm init` to clone this template:
-
-```sh
-npm init rust-webpack my-app
-```
-
-[Afterwards check out the full documentation for exploring it][template-docs].
-
-## 🔋 Batteries Included
-
-This template comes pre-configured with all the boilerplate for compiling Rust
-to WebAssembly and hooking into a Webpack build pipeline.
-
-* `npm run start` -- Serve the project locally for development at
-  `http://localhost:8080`.
-
-* `npm run build` -- Bundle the project (in production mode).
+## Tech Stack
+- Server (Rust)
+- Front End UI (Elm)
+- Photoshop Document Parser/Editor (Rust/Wasm)
+- Bridge from Elm to Wasm (ReasonML)
