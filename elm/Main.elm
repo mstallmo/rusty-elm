@@ -72,7 +72,13 @@ update msg model =
             ( model
             , Http.post
                 { url = "http://localhost:8081/api/v1/saveImage"
-                , body = Http.jsonBody (Encode.object [ data model.selectedFile ])
+                , body =
+                    Http.jsonBody
+                        (Encode.object
+                            [ image model.selectedFile
+                            , title "Ferris.psd"
+                            ]
+                        )
                 , expect = Http.expectString GotText
                 }
             )
@@ -102,9 +108,14 @@ extractFile maybeFile =
             Cmd.none
 
 
-data : String -> ( String, Encode.Value )
-data value =
-    ( "data", Encode.string value )
+title : String -> ( String, Encode.Value )
+title value =
+    ( "title", Encode.string value )
+
+
+image : String -> ( String, Encode.Value )
+image value =
+    ( "image", Encode.string value )
 
 
 
