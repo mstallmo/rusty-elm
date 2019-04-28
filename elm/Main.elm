@@ -12,6 +12,7 @@ import Html.Attributes exposing (height, id, multiple, name, type_, width)
 import Html.Events exposing (on)
 import Http
 import Json.Decode as Json
+import Json.Encode as Encode exposing (Value)
 import Task
 
 
@@ -68,7 +69,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SaveImage ->
-            ( model, Http.get { url = "http://localhost:8081/api/v1/hello", expect = Http.expectString GotText } )
+            ( model
+            , Http.post
+                { url = "http://localhost:8081/api/v1/saveImage"
+                , body = Http.jsonBody (Encode.object [ data model.selectedFile ])
+                , expect = Http.expectString GotText
+                }
+            )
 
         GotText result ->
             case result of
@@ -93,6 +100,11 @@ extractFile maybeFile =
 
         Nothing ->
             Cmd.none
+
+
+data : String -> ( String, Encode.Value )
+data value =
+    ( "data", Encode.string value )
 
 
 
