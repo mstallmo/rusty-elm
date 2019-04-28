@@ -14,7 +14,7 @@ var renderImageWithDataUrl = ((dataUrl, id) => {
     }
   });
 
-var renderPsd = ((imageData, id) => {
+var renderPsd = ((id, imageData) => {
         const canvas = document.getElementById(id);
         const ctx = canvas.getContext('2d');
         ctx.putImageData(imageData, 0, 0);

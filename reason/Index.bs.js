@@ -5,20 +5,19 @@ import * as Elm$ReasonableRustyElm from "./Elm.bs.js";
 import * as Psd$ReasonableRustyElm from "./Psd.bs.js";
 import * as Render$ReasonableRustyElm from "./Render.bs.js";
 
+function fillArrayBufferFromString(decodedString, arrayBuffer) {
+  return arrayBuffer.map((function (param, index) {
+                return decodedString.charCodeAt(index) | 0;
+              }));
+}
+
 Elm$ReasonableRustyElm.newApp.ports.renderImage.subscribe((function (imageUrl) {
         var decodedString = atob(imageUrl.split(",")[1]);
-        var stringArray = Array.from(decodedString);
-        var arrayBuffer = new Uint8Array(decodedString.length);
-        stringArray.map((function (element, index) {
-                arrayBuffer[index] = decodedString.charCodeAt(index) | 0;
-                return element;
-              }));
-        console.log(arrayBuffer);
-        var parsedDocument = Psd$ReasonableRustyElm.renderPsd(arrayBuffer);
-        return Curry._2(Render$ReasonableRustyElm.renderPsd, parsedDocument, "canvas");
+        return Curry._2(Render$ReasonableRustyElm.renderPsd, "canvas", Psd$ReasonableRustyElm.renderPsd(fillArrayBufferFromString(decodedString, new Uint8Array(decodedString.length))));
       }));
 
 export {
+  fillArrayBufferFromString ,
   
 }
 /*  Not a pure module */

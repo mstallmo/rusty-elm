@@ -13,8 +13,8 @@ let renderImageWithDataUrl: (string, string) => unit = [%raw
   }|}
 ];
 
-let renderPsd: (Webapi.Dom.Image.t, string) => unit = [%raw
-  {|(imageData, id) => {
+let renderPsd: (string, Webapi.Dom.Image.t) => unit = [%raw
+  {|(id, imageData) => {
         const canvas = document.getElementById(id);
         const ctx = canvas.getContext('2d');
         ctx.putImageData(imageData, 0, 0);
