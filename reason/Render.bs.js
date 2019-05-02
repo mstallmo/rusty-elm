@@ -20,9 +20,15 @@ var renderPsd = ((id, imageData) => {
         ctx.putImageData(imageData, 0, 0);
     });
 
+var getActiveFile = ((id) => {
+        const canvas = document.getElementById(id);
+        return canvas.toDataURL();
+    });
+
 export {
   renderImageWithDataUrl ,
   renderPsd ,
+  getActiveFile ,
   
 }
 /* renderImageWithDataUrl Not a pure module */

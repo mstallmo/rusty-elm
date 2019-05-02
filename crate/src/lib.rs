@@ -1,3 +1,5 @@
+#[macro_use] extern crate serde_derive;
+
 use psd::Psd;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::Clamped;
@@ -18,15 +20,34 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn render_psd(array_buffer: &mut [u8]) -> web_sys::ImageData {
+pub fn parse_psd(array_buffer: &mut [u8]) -> Box<[JsValue]>{
     let psd = Psd::from_bytes(array_buffer).unwrap();
 
-    let mut psd_pixels = psd.flatten_layers_rgba(&|(_idx, _layer)| true).unwrap();
+    log("Splitting layers");
 
-    let psd_pixels = Clamped(&mut psd_pixels[..]);
+    split_to_layers(&psd).into_boxed_slice()
+}
 
-    log("About to send back image data");
+#[wasm_bindgen]
+#[derive(Serialize)]
+pub struct Layer {
+    name: String,
+    image: Vec<u8>,
+    width: u16,
+    height: u16
+}
 
-    web_sys::ImageData::new_with_u8_clamped_array_and_sh(psd_pixels, psd.width(), psd.height())
-        .unwrap()
+fn split_to_layers(document: &psd::Psd) -> Vec<JsValue> {
+    document
+        .layers()
+        .iter()
+        .map(|layer| {
+            JsValue::from_serde(&Layer {
+                name: layer.name().to_owned(),
+                image: layer.rgba().unwrap(),
+                width: layer.width(),
+                height: layer.height()
+            }).unwrap()
+        })
+        .collect()
 }

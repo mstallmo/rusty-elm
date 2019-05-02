@@ -27,7 +27,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    activeFile ActiveFile
 
 
 
@@ -35,6 +35,9 @@ subscriptions _ =
 
 
 port renderImage : String -> Cmd a
+
+
+port activeFile : (String -> msg) -> Sub msg
 
 
 
@@ -46,12 +49,12 @@ type alias SelectedFiles =
 
 
 type alias Model =
-    { count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String }
+    { count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String, activeFile : String }
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { count = 0, serverResponse = "", selectedFiles = [], selectedFile = "" }, Cmd.none )
+    ( { count = 0, serverResponse = "", selectedFiles = [], selectedFile = "", activeFile = "" }, Cmd.none )
 
 
 
@@ -63,6 +66,7 @@ type Msg
     | GotText (Result Http.Error String)
     | SelectedFiles (List File)
     | SelectedFile String
+    | ActiveFile String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -75,7 +79,7 @@ update msg model =
                 , body =
                     Http.jsonBody
                         (Encode.object
-                            [ image model.selectedFile
+                            [ image model.activeFile
                             , title "Ferris.psd"
                             ]
                         )
@@ -97,6 +101,9 @@ update msg model =
         SelectedFile file ->
             ( { model | selectedFile = file }, renderImage file )
 
+        ActiveFile file ->
+            ( { model | activeFile = file }, Cmd.none )
+
 
 extractFile : Maybe File -> Cmd Msg
 extractFile maybeFile =
@@ -116,6 +123,11 @@ title value =
 image : String -> ( String, Encode.Value )
 image value =
     ( "image", Encode.string value )
+
+
+filesDecoder : Json.Decoder (List File)
+filesDecoder =
+    Json.at [ "target", "files" ] (Json.list File.decoder)
 
 
 
@@ -179,8 +191,3 @@ fetchFromServerButton =
         , centerY
         ]
         { onPress = Just SaveImage, label = text "Save" }
-
-
-filesDecoder : Json.Decoder (List File)
-filesDecoder =
-    Json.at [ "target", "files" ] (Json.list File.decoder)

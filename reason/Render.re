@@ -20,3 +20,10 @@ let renderPsd: (string, Webapi.Dom.Image.t) => unit = [%raw
         ctx.putImageData(imageData, 0, 0);
     }|}
 ];
+
+let getActiveFile: string => string = [%raw
+  {|(id) => {
+        const canvas = document.getElementById(id);
+        return canvas.toDataURL();
+    }|}
+];

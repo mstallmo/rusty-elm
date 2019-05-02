@@ -2,12 +2,12 @@
 
 import * as Rusty_elm from "../crate/pkg/rusty_elm";
 
-function renderPsd(prim) {
-  return Rusty_elm.render_psd(prim);
+function parsePsd(prim) {
+  return Rusty_elm.parse_psd(prim);
 }
 
 export {
-  renderPsd ,
+  parsePsd ,
   
 }
 /* ../crate/pkg/rusty_elm Not a pure module */
