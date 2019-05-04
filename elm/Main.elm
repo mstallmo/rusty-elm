@@ -11,7 +11,7 @@ import Html exposing (Html, canvas, input)
 import Html.Attributes exposing (height, id, multiple, name, type_, width)
 import Html.Events exposing (on)
 import Http
-import Json.Decode as Json
+import Json.Decode exposing (Decoder, field, int, map, map3, map4, string)
 import Json.Encode as Encode exposing (Value)
 import Task
 
@@ -27,17 +27,17 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    activeFile ActiveFile
+    documentUpdated mapActiveDocument
 
 
 
 -- PORTS
 
 
-port renderImage : String -> Cmd a
+port openPSDDocument : String -> Cmd a
 
 
-port activeFile : (String -> msg) -> Sub msg
+port documentUpdated : (Json.Decode.Value -> msg) -> Sub msg
 
 
 
@@ -48,13 +48,21 @@ type alias SelectedFiles =
     List File
 
 
+type alias Layer =
+    { name : String, width : Int, height : Int, image : List Int }
+
+
+type alias Document =
+    { width : Int, height : Int, layers : List Layer }
+
+
 type alias Model =
-    { count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String, activeFile : String }
+    { count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String, activeDocument : Document }
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { count = 0, serverResponse = "", selectedFiles = [], selectedFile = "", activeFile = "" }, Cmd.none )
+    ( { count = 0, serverResponse = "", selectedFiles = [], selectedFile = "", activeDocument = { width = 0, height = 0, layers = [] } }, Cmd.none )
 
 
 
@@ -62,11 +70,12 @@ initialModel =
 
 
 type Msg
-    = SaveImage
+    = NoOp
+    | SaveImage
     | GotText (Result Http.Error String)
     | SelectedFiles (List File)
     | SelectedFile String
-    | ActiveFile String
+    | ActiveDocument Document
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,7 +88,7 @@ update msg model =
                 , body =
                     Http.jsonBody
                         (Encode.object
-                            [ image model.activeFile
+                            [ image "placeholder string for document"
                             , title "Ferris.psd"
                             ]
                         )
@@ -99,10 +108,13 @@ update msg model =
             ( { model | selectedFiles = files }, List.head files |> extractFile )
 
         SelectedFile file ->
-            ( { model | selectedFile = file }, renderImage file )
+            ( { model | selectedFile = file }, openPSDDocument file )
 
-        ActiveFile file ->
-            ( { model | activeFile = file }, Cmd.none )
+        ActiveDocument file ->
+            ( { model | activeDocument = file }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 extractFile : Maybe File -> Cmd Msg
@@ -125,9 +137,58 @@ image value =
     ( "image", Encode.string value )
 
 
-filesDecoder : Json.Decoder (List File)
+filesDecoder : Decoder (List File)
 filesDecoder =
-    Json.at [ "target", "files" ] (Json.list File.decoder)
+    Json.Decode.at [ "target", "files" ] (Json.Decode.list File.decoder)
+
+
+nameDecoder : Decoder String
+nameDecoder =
+    field "name" string
+
+
+widthDecoder : Decoder Int
+widthDecoder =
+    field "width" int
+
+
+heightDecoder : Decoder Int
+heightDecoder =
+    field "height" int
+
+
+imageDecoder : Decoder (List Int)
+imageDecoder =
+    field "image" (Json.Decode.list int)
+
+
+layerDecoder : Decoder Layer
+layerDecoder =
+    map4 Layer nameDecoder widthDecoder heightDecoder imageDecoder
+
+
+documentDecoder : Decoder Document
+documentDecoder =
+    map3 Document widthDecoder heightDecoder (Json.Decode.list layerDecoder)
+
+
+mapActiveDocument : Json.Decode.Value -> Msg
+mapActiveDocument documentJson =
+    case decodeDocument documentJson of
+        Ok document ->
+            ActiveDocument document
+
+        Err errorMessage ->
+            let
+                _ =
+                    Debug.log "Error in mapActiveDocument:" errorMessage
+            in
+            NoOp
+
+
+decodeDocument : Json.Decode.Value -> Result Json.Decode.Error Document
+decodeDocument activeDocument =
+    Json.Decode.decodeValue documentDecoder activeDocument
 
 
 
@@ -153,7 +214,7 @@ elementRow model =
                     , name "image"
                     , multiple False
                     , id "ImageInput"
-                    , on "change" (Json.map SelectedFiles filesDecoder)
+                    , on "change" (map SelectedFiles filesDecoder)
                     ]
                     []
             )
@@ -165,6 +226,7 @@ imageColumn : Element Msg
 imageColumn =
     column [ Background.color (rgb255 128 128 128) ]
         [ el [] (html <| canvas [ id "canvas", width 1920, height 1080 ] [])
+        , el [] (html <| canvas [ id "canvas2", width 1920, height 1080 ] [])
         ]
 
 

@@ -8,7 +8,6 @@ var renderImageWithDataUrl = ((dataUrl, id) => {
 
     const img = new Image();
     img.src = dataUrl;
-
     img.onload = () => {
         ctx.drawImage(img, 0, 0);
     }
@@ -17,6 +16,7 @@ var renderImageWithDataUrl = ((dataUrl, id) => {
 var renderPsd = ((id, imageData) => {
         const canvas = document.getElementById(id);
         const ctx = canvas.getContext('2d');
+        ctx.globalAlpha = 0.2;
         ctx.putImageData(imageData, 0, 0);
     });
 

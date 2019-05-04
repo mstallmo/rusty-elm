@@ -18,16 +18,15 @@ function fillClampedArrayFromArray(inputArray, arrayBuffer) {
               }));
 }
 
-Elm$ReasonableRustyElm.newApp.ports.renderImage.subscribe((function (imageUrl) {
+Elm$ReasonableRustyElm.newApp.ports.openPSDDocument.subscribe((function (imageUrl) {
         var decodedString = atob(Caml_array.caml_array_get(imageUrl.split(","), 1));
-        var layerList = Psd$ReasonableRustyElm.parsePsd(fillArrayBufferFromString(decodedString, new Uint8Array(decodedString.length)));
-        var firstLayer = Caml_array.caml_array_get(layerList, 0);
+        var $$document = Psd$ReasonableRustyElm.parsePsd(fillArrayBufferFromString(decodedString, new Uint8Array(decodedString.length)));
+        var firstLayer = Caml_array.caml_array_get($$document.layers, 0);
         var firstClampedArrayBuffer = fillClampedArrayFromArray(firstLayer.image, new Uint8ClampedArray(firstLayer.image.length));
         Curry._2(Render$ReasonableRustyElm.renderPsd, "canvas", new ImageData(firstClampedArrayBuffer, firstLayer.width, firstLayer.height));
-        var secondLayer = Caml_array.caml_array_get(layerList, 1);
-        console.log(secondLayer);
+        var secondLayer = Caml_array.caml_array_get($$document.layers, 1);
         var secondClampedArrayBuffer = fillClampedArrayFromArray(secondLayer.image, new Uint8ClampedArray(1000000));
-        return Curry._2(Render$ReasonableRustyElm.renderPsd, "canvas", new ImageData(secondClampedArrayBuffer, 500, 500));
+        return Curry._2(Render$ReasonableRustyElm.renderPsd, "canvas2", new ImageData(secondClampedArrayBuffer, 500, 500));
       }));
 
 export {

@@ -1,4 +1,5 @@
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 
 use psd::Psd;
 use wasm_bindgen::prelude::*;
@@ -20,12 +21,27 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn parse_psd(array_buffer: &mut [u8]) -> Box<[JsValue]>{
+pub fn parse_psd(array_buffer: &mut [u8]) -> JsValue {
     let psd = Psd::from_bytes(array_buffer).unwrap();
 
     log("Splitting layers");
+    log("test");
 
-    split_to_layers(&psd).into_boxed_slice()
+    let document = Document {
+        width: psd.width(),
+        height: psd.height(),
+        layers: split_to_layers(&psd),
+    };
+
+    JsValue::from_serde(&document).unwrap()
+}
+
+#[wasm_bindgen]
+#[derive(Serialize)]
+pub struct Document {
+    width: u32,
+    height: u32,
+    layers: Vec<Layer>,
 }
 
 #[wasm_bindgen]
@@ -34,20 +50,18 @@ pub struct Layer {
     name: String,
     image: Vec<u8>,
     width: u16,
-    height: u16
+    height: u16,
 }
 
-fn split_to_layers(document: &psd::Psd) -> Vec<JsValue> {
+fn split_to_layers(document: &psd::Psd) -> Vec<Layer> {
     document
         .layers()
         .iter()
-        .map(|layer| {
-            JsValue::from_serde(&Layer {
-                name: layer.name().to_owned(),
-                image: layer.rgba().unwrap(),
-                width: layer.width(),
-                height: layer.height()
-            }).unwrap()
+        .map(|layer| Layer {
+            name: layer.name().to_owned(),
+            image: layer.rgba().unwrap(),
+            width: layer.width(),
+            height: layer.height(),
         })
         .collect()
 }
