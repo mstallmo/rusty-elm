@@ -50,7 +50,8 @@ pub struct Layer {
     width: u16,
     height: u16,
     #[allow(non_snake_case)]
-    layerIdx: usize
+    layerIdx: usize,
+    visible: bool
 }
 
 fn split_to_layers(document: &psd::Psd) -> Vec<Layer> {
@@ -63,7 +64,8 @@ fn split_to_layers(document: &psd::Psd) -> Vec<Layer> {
             image: layer.rgba().unwrap(),
             width: layer.width(),
             height: layer.height(),
-            layerIdx: layer_idx
+            layerIdx: layer_idx,
+            visible: true
         })
         .collect()
 }

@@ -5,6 +5,7 @@ type layer = {
   "width": int,
   "height": int,
   "layerIdx": int,
+  "visible": bool,
 };
 
 type document = {

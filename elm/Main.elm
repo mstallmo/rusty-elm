@@ -10,7 +10,7 @@ import Html exposing (Html, canvas, input)
 import Html.Attributes exposing (height, id, multiple, name, style, type_, width)
 import Html.Events exposing (on)
 import Http
-import Json.Decode exposing (Decoder, field, int, map, map3, map5, string)
+import Json.Decode exposing (Decoder, bool, field, int, map, map3, map6, string)
 import Json.Encode exposing (Value)
 import List
 import Task
@@ -52,7 +52,7 @@ type alias SelectedFiles =
 
 
 type alias Layer =
-    { name : String, width : Int, height : Int, image : List Int, layerIdx : Int }
+    { name : String, width : Int, height : Int, image : List Int, layerIdx : Int, visible : Bool }
 
 
 type alias Document =
@@ -79,6 +79,7 @@ type Msg
     | SelectedFiles (List File)
     | SelectedFile String
     | ActiveDocument Document
+    | ToggleVisibility ( Int, Bool )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -115,6 +116,27 @@ update msg model =
 
         ActiveDocument document ->
             ( { model | activeDocument = document }, renderLayers <| List.map (\layer -> layerEncoder layer) document.layers )
+
+        ToggleVisibility ( index, visible ) ->
+            let
+                activeDocument =
+                    model.activeDocument
+
+                updatedLayers =
+                    List.map
+                        (\layer ->
+                            if index == layer.layerIdx then
+                                { layer | visible = visible }
+
+                            else
+                                layer
+                        )
+                        activeDocument.layers
+
+                newActiveDocument =
+                    { activeDocument | layers = updatedLayers }
+            in
+            ( { model | activeDocument = newActiveDocument }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -195,6 +217,16 @@ layerIdxDecoder =
     field "layerIdx" int
 
 
+visibilityEncoder : Bool -> ( String, Json.Encode.Value )
+visibilityEncoder visible =
+    ( "visible", Json.Encode.bool visible )
+
+
+visibilityDecoder : Decoder Bool
+visibilityDecoder =
+    field "visible" bool
+
+
 layerEncoder : Layer -> Json.Encode.Value
 layerEncoder layer =
     Json.Encode.object
@@ -203,12 +235,13 @@ layerEncoder layer =
         , heightEncoder layer.height
         , imageEncoder layer.image
         , layerIdxEncoder layer.layerIdx
+        , visibilityEncoder layer.visible
         ]
 
 
 layerDecoder : Decoder Layer
 layerDecoder =
-    map5 Layer nameDecoder widthDecoder heightDecoder imageDecoder layerIdxDecoder
+    map6 Layer nameDecoder widthDecoder heightDecoder imageDecoder layerIdxDecoder visibilityDecoder
 
 
 documentDecoder : Decoder Document
@@ -244,9 +277,10 @@ view model =
     Element.layout [] <|
         column [ spacing 20 ]
             [ elementRow model
-            , row [ padding 20, spacing 20 ]
-                [ sidebar
+            , row [ spacing 20, padding 20 ]
+                [ toolbar
                 , imageColumn model
+                , layerVisibilityColumn model
                 ]
             ]
 
@@ -270,10 +304,29 @@ elementRow model =
         ]
 
 
+toolbar : Element Msg
+toolbar =
+    column [ spacing 20, alignTop ]
+        [ Input.button [] { onPress = Nothing, label = text "toggle" }
+        , Input.button [] { onPress = Nothing, label = text "other toggle" }
+        ]
+
+
 imageColumn : Model -> Element Msg
 imageColumn model =
-    column [ spacing 20, htmlAttribute <| style "position" "relative" ]
-        (mapCanvasLayers model.activeDocument.layers)
+    column
+        [ htmlAttribute <| style "position" "relative" ]
+        (splitLayers model.activeDocument.layers)
+
+
+splitLayers : List Layer -> List (Element Msg)
+splitLayers layers =
+    case layers of
+        first :: rest ->
+            List.append [ html <| canvas [ id first.name, width 500, height 500 ] [] ] (mapCanvasLayers rest)
+
+        _ ->
+            mapCanvasLayers layers
 
 
 mapCanvasLayers : List Layer -> List (Element Msg)
@@ -295,12 +348,23 @@ mapCanvasLayers layers =
         layers
 
 
-sidebar : Element Msg
-sidebar =
-    column [ spacing 20, alignTop ]
-        [ Input.button [] { onPress = Nothing, label = text "toggle" }
-        , Input.button [] { onPress = Nothing, label = text "other toggle" }
-        ]
+layerVisibilityColumn : Model -> Element Msg
+layerVisibilityColumn model =
+    column [ spacing 20, alignTop ] (layerVisibilityToggle model.activeDocument.layers)
+
+
+layerVisibilityToggle : List Layer -> List (Element Msg)
+layerVisibilityToggle layers =
+    List.map
+        (\layer ->
+            Input.checkbox []
+                { onChange = \new -> ToggleVisibility ( layer.layerIdx, new )
+                , checked = layer.visible
+                , icon = Input.defaultCheckbox
+                , label = Input.labelRight [] (text layer.name)
+                }
+        )
+        layers
 
 
 saveElement : Model -> Element Msg
