@@ -34,31 +34,24 @@ Elm.Ports.renderLayers(
   (layers: array(Psd.layer)) => {
     Js.log(layers);
 
-    let firstLayer = layers[0];
-
-    let firstClampedArrayBuffer =
-      Array.length(firstLayer##image)
-      |> Uint8ClampedArray.fromLength
-      |> fillClampedArrayFromArray(firstLayer##image);
-    Render.renderPsd(
-      firstLayer##name,
-      Webapi.Dom.Image.makeWithData(
-        ~array=firstClampedArrayBuffer,
-        ~width=Js.Int.toFloat(firstLayer##width),
-        ~height=Js.Int.toFloat(firstLayer##height),
-      ),
-    );
-    let secondLayer = layers[1];
-    let secondClampedArrayBuffer =
-      Uint8ClampedArray.fromLength(4 * 500 * 500)
-      |> fillClampedArrayFromArray(secondLayer##image);
-    Render.renderPsd(
-      secondLayer##name,
-      Webapi.Dom.Image.makeWithData(
-        ~array=secondClampedArrayBuffer,
-        ~width=Js.Int.toFloat(500),
-        ~height=Js.Int.toFloat(500),
-      ),
-    );
+    let _ =
+      Array.map(
+        layer => {
+          let clampedArrayBuffer =
+            Array.length(layer##image)
+            |> Uint8ClampedArray.fromLength
+            |> fillClampedArrayFromArray(layer##image);
+          Render.renderPsd(
+            layer##name,
+            Webapi.Dom.Image.makeWithData(
+              ~array=clampedArrayBuffer,
+              ~width=Js.Int.toFloat(500),
+              ~height=Js.Int.toFloat(500),
+            ),
+          );
+        },
+        layers,
+      );
+    ();
   },
 );
