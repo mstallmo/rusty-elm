@@ -115,7 +115,7 @@ update msg model =
             ( { model | selectedFile = file }, openPSDDocument file )
 
         ActiveDocument document ->
-            ( { model | activeDocument = document }, renderLayers <| List.map (\layer -> layerEncoder layer) document.layers )
+            ( { model | activeDocument = document }, encodeAndRenderLayers document.layers )
 
         ToggleVisibility ( index, visible ) ->
             let
@@ -136,7 +136,7 @@ update msg model =
                 newActiveDocument =
                     { activeDocument | layers = updatedLayers }
             in
-            ( { model | activeDocument = newActiveDocument }, Cmd.none )
+            ( { model | activeDocument = newActiveDocument }, encodeAndRenderLayers newActiveDocument.layers )
 
         NoOp ->
             ( model, Cmd.none )
@@ -150,6 +150,11 @@ extractFile maybeFile =
 
         Nothing ->
             Cmd.none
+
+
+encodeAndRenderLayers : List Layer -> Cmd Msg
+encodeAndRenderLayers layers =
+    List.map (\layer -> layerEncoder layer) layers |> renderLayers
 
 
 encodeTitle : String -> ( String, Json.Encode.Value )
@@ -307,8 +312,8 @@ elementRow model =
 toolbar : Element Msg
 toolbar =
     column [ spacing 20, alignTop ]
-        [ Input.button [] { onPress = Nothing, label = text "toggle" }
-        , Input.button [] { onPress = Nothing, label = text "other toggle" }
+        [ Input.button [] { onPress = Nothing, label = text "First Tool" }
+        , Input.button [] { onPress = Nothing, label = text "Second Tool" }
         ]
 
 

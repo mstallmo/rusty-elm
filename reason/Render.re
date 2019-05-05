@@ -20,6 +20,14 @@ let renderPsd: (string, Webapi.Dom.Image.t) => unit = [%raw
     }|}
 ];
 
+let clearCanvas: string => unit = [%raw
+  {|(id) => {
+        const canvas = document.getElementById(id);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }|}
+];
+
 let getActiveFile: string => string = [%raw
   {|(id) => {
         const canvas = document.getElementById(id);

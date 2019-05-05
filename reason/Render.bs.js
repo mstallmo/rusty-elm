@@ -19,6 +19,12 @@ var renderPsd = ((id, imageData) => {
         ctx.putImageData(imageData, 0, 0);
     });
 
+var clearCanvas = ((id) => {
+        const canvas = document.getElementById(id);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
 var getActiveFile = ((id) => {
         const canvas = document.getElementById(id);
         return canvas.toDataURL();
@@ -27,6 +33,7 @@ var getActiveFile = ((id) => {
 export {
   renderImageWithDataUrl ,
   renderPsd ,
+  clearCanvas ,
   getActiveFile ,
   
 }

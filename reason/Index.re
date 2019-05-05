@@ -32,24 +32,25 @@ Elm.Ports.openPSDDocument(
 Elm.Ports.renderLayers(
   Elm.newApp,
   (layers: array(Psd.layer)) => {
-    Js.log(layers);
-
     let _ =
       Array.map(
-        layer => {
-          let clampedArrayBuffer =
-            Array.length(layer##image)
-            |> Uint8ClampedArray.fromLength
-            |> fillClampedArrayFromArray(layer##image);
-          Render.renderPsd(
-            layer##name,
-            Webapi.Dom.Image.makeWithData(
-              ~array=clampedArrayBuffer,
-              ~width=Js.Int.toFloat(500),
-              ~height=Js.Int.toFloat(500),
-            ),
-          );
-        },
+        layer =>
+          if (layer##visible == true) {
+            let clampedArrayBuffer =
+              Array.length(layer##image)
+              |> Uint8ClampedArray.fromLength
+              |> fillClampedArrayFromArray(layer##image);
+            Render.renderPsd(
+              layer##name,
+              Webapi.Dom.Image.makeWithData(
+                ~array=clampedArrayBuffer,
+                ~width=Js.Int.toFloat(500),
+                ~height=Js.Int.toFloat(500),
+              ),
+            );
+          } else {
+            Render.clearCanvas(layer##name);
+          },
         layers,
       );
     ();

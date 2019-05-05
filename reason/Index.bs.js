@@ -27,10 +27,13 @@ Elm$ReasonableRustyElm.newApp.ports.openPSDDocument.subscribe((function (imageUr
       }));
 
 Elm$ReasonableRustyElm.newApp.ports.renderLayers.subscribe((function (layers) {
-        console.log(layers);
         $$Array.map((function (layer) {
-                var clampedArrayBuffer = fillClampedArrayFromArray(layer.image, new Uint8ClampedArray(layer.image.length));
-                return Curry._2(Render$ReasonableRustyElm.renderPsd, layer.name, new ImageData(clampedArrayBuffer, 500, 500));
+                if (layer.visible === true) {
+                  var clampedArrayBuffer = fillClampedArrayFromArray(layer.image, new Uint8ClampedArray(layer.image.length));
+                  return Curry._2(Render$ReasonableRustyElm.renderPsd, layer.name, new ImageData(clampedArrayBuffer, 500, 500));
+                } else {
+                  return Curry._1(Render$ReasonableRustyElm.clearCanvas, layer.name);
+                }
               }), layers);
         return /* () */0;
       }));
