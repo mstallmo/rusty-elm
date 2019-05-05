@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin/plugin");
 const dist = path.resolve(__dirname, "dist");
 
+const PRODUCTION = process.env.NODE_ENV === 'production';
+
 module.exports = {
   entry: "./js/bootstrap.js",
   mode: 'development',
@@ -26,7 +28,7 @@ module.exports = {
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, "crate"),
       // WasmPackPlugin defaults to compiling in "dev" profile. To change that, use forceMode: 'release':
-      // forceMode: 'release'
+      forceMode: (PRODUCTION) ? 'release' : ''
     }),
   ],
   module: {
@@ -36,7 +38,8 @@ module.exports = {
         exclude: [/elm-stuff/, /node-modules/],
         loader: 'elm-webpack-loader',
         options: {
-          debug: true
+          debug: false,
+          optimize: PRODUCTION
         }
       }
     ]
