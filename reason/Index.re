@@ -25,32 +25,40 @@ Elm.Ports.openPSDDocument(
       |> fillArrayBufferFromString(decodedString)
       |> Psd.parsePsd;
 
-    let firstLayer: Psd.layer = document##layers[0];
+    Elm.Ports.documentUpdated(Elm.newApp, document);
+  },
+);
+
+Elm.Ports.renderLayers(
+  Elm.newApp,
+  (layers: array(Psd.layer)) => {
+    Js.log(layers);
+
+    let firstLayer = layers[0];
 
     let firstClampedArrayBuffer =
       Array.length(firstLayer##image)
       |> Uint8ClampedArray.fromLength
       |> fillClampedArrayFromArray(firstLayer##image);
     Render.renderPsd(
-      "canvas",
+      firstLayer##name,
       Webapi.Dom.Image.makeWithData(
         ~array=firstClampedArrayBuffer,
         ~width=Js.Int.toFloat(firstLayer##width),
         ~height=Js.Int.toFloat(firstLayer##height),
       ),
     );
-    let secondLayer = document##layers[1];
+    let secondLayer = layers[1];
     let secondClampedArrayBuffer =
       Uint8ClampedArray.fromLength(4 * 500 * 500)
       |> fillClampedArrayFromArray(secondLayer##image);
     Render.renderPsd(
-      "canvas2",
+      secondLayer##name,
       Webapi.Dom.Image.makeWithData(
         ~array=secondClampedArrayBuffer,
         ~width=Js.Int.toFloat(500),
         ~height=Js.Int.toFloat(500),
       ),
     );
-    /*Render.getActiveFile("canvas") |> Elm.Ports.activeFile(Elm.newApp);*/
   },
 );

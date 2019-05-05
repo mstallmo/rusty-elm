@@ -4,6 +4,7 @@ type layer = {
   "image": array(int),
   "width": int,
   "height": int,
+  "layerIdx": int,
 };
 
 type document = {

@@ -1,18 +1,18 @@
 port module Main exposing (main)
 
 import Browser
-import Element exposing (Element, centerY, column, el, html, padding, paddingXY, rgb255, row, spacing, text)
-import Element.Background as Background
+import Element exposing (Element, alignTop, centerY, column, el, html, htmlAttribute, padding, paddingXY, rgb255, row, spacing, text)
 import Element.Border as Border
 import Element.Input as Input
 import Element.Region as Region
 import File exposing (File)
 import Html exposing (Html, canvas, input)
-import Html.Attributes exposing (height, id, multiple, name, type_, width)
+import Html.Attributes exposing (height, id, multiple, name, style, type_, width)
 import Html.Events exposing (on)
 import Http
-import Json.Decode exposing (Decoder, field, int, map, map3, map4, string)
-import Json.Encode as Encode exposing (Value)
+import Json.Decode exposing (Decoder, field, int, map, map3, map5, string)
+import Json.Encode exposing (Value)
+import List
 import Task
 
 
@@ -40,6 +40,9 @@ port openPSDDocument : String -> Cmd a
 port documentUpdated : (Json.Decode.Value -> msg) -> Sub msg
 
 
+port renderLayers : List Json.Encode.Value -> Cmd a
+
+
 
 -- MODEL
 
@@ -49,7 +52,7 @@ type alias SelectedFiles =
 
 
 type alias Layer =
-    { name : String, width : Int, height : Int, image : List Int }
+    { name : String, width : Int, height : Int, image : List Int, layerIdx : Int }
 
 
 type alias Document =
@@ -87,9 +90,9 @@ update msg model =
                 { url = "http://localhost:8081/api/v1/saveImage"
                 , body =
                     Http.jsonBody
-                        (Encode.object
-                            [ image "placeholder string for document"
-                            , title "Ferris.psd"
+                        (Json.Encode.object
+                            [ encodeImage "placeholder string for document"
+                            , encodeTitle "Ferris.psd"
                             ]
                         )
                 , expect = Http.expectString GotText
@@ -110,8 +113,8 @@ update msg model =
         SelectedFile file ->
             ( { model | selectedFile = file }, openPSDDocument file )
 
-        ActiveDocument file ->
-            ( { model | activeDocument = file }, Cmd.none )
+        ActiveDocument document ->
+            ( { model | activeDocument = document }, renderLayers <| List.map (\layer -> layerEncoder layer) document.layers )
 
         NoOp ->
             ( model, Cmd.none )
@@ -127,14 +130,14 @@ extractFile maybeFile =
             Cmd.none
 
 
-title : String -> ( String, Encode.Value )
-title value =
-    ( "title", Encode.string value )
+encodeTitle : String -> ( String, Json.Encode.Value )
+encodeTitle value =
+    ( "title", Json.Encode.string value )
 
 
-image : String -> ( String, Encode.Value )
-image value =
-    ( "image", Encode.string value )
+encodeImage : String -> ( String, Json.Encode.Value )
+encodeImage value =
+    ( "image", Json.Encode.string value )
 
 
 filesDecoder : Decoder (List File)
@@ -142,9 +145,19 @@ filesDecoder =
     Json.Decode.at [ "target", "files" ] (Json.Decode.list File.decoder)
 
 
+nameEncoder : String -> ( String, Json.Encode.Value )
+nameEncoder name =
+    ( "name", Json.Encode.string name )
+
+
 nameDecoder : Decoder String
 nameDecoder =
     field "name" string
+
+
+widthEncoder : Int -> ( String, Json.Encode.Value )
+widthEncoder width =
+    ( "width", Json.Encode.int width )
 
 
 widthDecoder : Decoder Int
@@ -152,9 +165,19 @@ widthDecoder =
     field "width" int
 
 
+heightEncoder : Int -> ( String, Json.Encode.Value )
+heightEncoder height =
+    ( "height", Json.Encode.int height )
+
+
 heightDecoder : Decoder Int
 heightDecoder =
     field "height" int
+
+
+imageEncoder : List Int -> ( String, Json.Encode.Value )
+imageEncoder image =
+    ( "image", Json.Encode.list Json.Encode.int image )
 
 
 imageDecoder : Decoder (List Int)
@@ -162,14 +185,35 @@ imageDecoder =
     field "image" (Json.Decode.list int)
 
 
+layerIdxEncoder : Int -> ( String, Json.Encode.Value )
+layerIdxEncoder layerIdx =
+    ( "layerIdx", Json.Encode.int layerIdx )
+
+
+layerIdxDecoder : Decoder Int
+layerIdxDecoder =
+    field "layerIdx" int
+
+
+layerEncoder : Layer -> Json.Encode.Value
+layerEncoder layer =
+    Json.Encode.object
+        [ nameEncoder layer.name
+        , widthEncoder layer.width
+        , heightEncoder layer.height
+        , imageEncoder layer.image
+        , layerIdxEncoder layer.layerIdx
+        ]
+
+
 layerDecoder : Decoder Layer
 layerDecoder =
-    map4 Layer nameDecoder widthDecoder heightDecoder imageDecoder
+    map5 Layer nameDecoder widthDecoder heightDecoder imageDecoder layerIdxDecoder
 
 
 documentDecoder : Decoder Document
 documentDecoder =
-    map3 Document widthDecoder heightDecoder (Json.Decode.list layerDecoder)
+    map3 Document widthDecoder heightDecoder (field "layers" (Json.Decode.list layerDecoder))
 
 
 mapActiveDocument : Json.Decode.Value -> Msg
@@ -200,7 +244,10 @@ view model =
     Element.layout [] <|
         column [ spacing 20 ]
             [ elementRow model
-            , row [] [ imageColumn ]
+            , row [ padding 20, spacing 20 ]
+                [ sidebar
+                , imageColumn model
+                ]
             ]
 
 
@@ -218,20 +265,46 @@ elementRow model =
                     ]
                     []
             )
-        , fetchRow model
+        , saveElement model
+        , el [] (text <| "Width: " ++ String.fromInt model.activeDocument.width ++ " Height: " ++ String.fromInt model.activeDocument.height)
         ]
 
 
-imageColumn : Element Msg
-imageColumn =
-    column [ Background.color (rgb255 128 128 128) ]
-        [ el [] (html <| canvas [ id "canvas", width 1920, height 1080 ] [])
-        , el [] (html <| canvas [ id "canvas2", width 1920, height 1080 ] [])
+imageColumn : Model -> Element Msg
+imageColumn model =
+    column [ spacing 20, htmlAttribute <| style "position" "relative" ]
+        (mapCanvasLayers model.activeDocument.layers)
+
+
+mapCanvasLayers : List Layer -> List (Element Msg)
+mapCanvasLayers layers =
+    List.map
+        (\element ->
+            html <|
+                canvas
+                    [ id element.name
+                    , width 500
+                    , height 500
+                    , style "position" "absolute"
+                    , style "z-index" (String.fromInt element.layerIdx)
+                    , style "left" "0"
+                    , style "top" "0"
+                    ]
+                    []
+        )
+        layers
+
+
+sidebar : Element Msg
+sidebar =
+    column [ spacing 20, alignTop ]
+        [ Input.button [] { onPress = Nothing, label = text "toggle" }
+        , Input.button [] { onPress = Nothing, label = text "other toggle" }
         ]
 
 
-fetchRow : Model -> Element Msg
-fetchRow model =
+saveElement : Model -> Element Msg
+saveElement model =
     row [ spacing 30, paddingXY 0 20 ]
         [ fetchFromServerButton, fetchResultLabel model ]
 

@@ -3,8 +3,6 @@ extern crate serde_derive;
 
 use psd::Psd;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::Clamped;
-use web_sys;
 
 mod utils;
 
@@ -51,17 +49,21 @@ pub struct Layer {
     image: Vec<u8>,
     width: u16,
     height: u16,
+    #[allow(non_snake_case)]
+    layerIdx: usize
 }
 
 fn split_to_layers(document: &psd::Psd) -> Vec<Layer> {
     document
         .layers()
         .iter()
-        .map(|layer| Layer {
+        .enumerate()
+        .map(|(layer_idx, layer)| Layer {
             name: layer.name().to_owned(),
             image: layer.rgba().unwrap(),
             width: layer.width(),
             height: layer.height(),
+            layerIdx: layer_idx
         })
         .collect()
 }

@@ -19,6 +19,10 @@ module Ports = {
   [@bs.send] [@bs.scope ("ports", "openPSDDocument")]
   external openPSDDocument: (app, string => unit) => unit = "subscribe";
 
-  [@bs.send] [@bs.scope ("ports", "activeFile")]
-  external activeFile: (app, string) => unit = "send";
+  [@bs.send] [@bs.scope ("ports", "renderLayers")]
+  external renderLayers: (app, array(Psd.layer) => unit) => unit =
+    "subscribe";
+
+  [@bs.send] [@bs.scope ("ports", "documentUpdated")]
+  external documentUpdated: (app, Psd.document) => unit = "send";
 };
