@@ -43,7 +43,16 @@ jobs:
           command: |
             aws s3 cp ~/rusty-elm/dist s3://rusty-elm --exclude "*" --include "*.wasm" --content-type application/wasm --recursive
             aws s3 cp ~/rusty-elm/dist s3://rusty-elm --exclude "*.wasm" --recursive
-
+  build_server:
+    <<: *container_config
+    docker:
+      - iamge: mstallmo/server-build:latest
+    steps:
+      - checkout
+      - run:
+          name: Build Server
+          command: |
+            npm run build:server
 workflows:
   version: 2
   install_and_build_client:
@@ -62,6 +71,10 @@ workflows:
           context: GLOBAL
           requires:
             - build_client
+          filters:
+            branches:
+              only: master
+      - build_server:
           filters:
             branches:
               only: master
