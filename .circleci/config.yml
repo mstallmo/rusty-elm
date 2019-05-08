@@ -58,6 +58,7 @@ workflows:
             branches:
               only: master
       - deploy_client:
+          context: GLOBAL
           requires:
             - build_client
           filters:
