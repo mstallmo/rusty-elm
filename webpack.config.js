@@ -7,7 +7,7 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
 
 module.exports = {
   entry: "./js/bootstrap.js",
-  mode: 'development',
+  mode: (PRODUCTION) ? 'production' : 'development',
   output: {
     path: dist,
     filename: "bundle.js"

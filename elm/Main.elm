@@ -261,10 +261,10 @@ mapActiveDocument documentJson =
             ActiveDocument document
 
         Err errorMessage ->
-            let
-                _ =
-                    Debug.log "Error in mapActiveDocument:" errorMessage
-            in
+--            let
+--                _ =
+--                    Debug.log "Error in mapActiveDocument:" errorMessage
+--            in
             NoOp
 
 
