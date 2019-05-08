@@ -1,8 +1,8 @@
 version: 2.1
-docker:
-  - image: mstallmo/client-build:latest
 jobs:
-  install:
+  install_client:
+    docker:
+      - image: mstallmo/client-build:latest
     steps:
       - checkout
       - run: |
@@ -10,9 +10,9 @@ jobs:
           npm install
 workflows:
   version: 2
-  install_and_build:
+  install_and_build_client:
     jobs:
-      - install
+      - install_client
     filters:
       branches:
         only: master
