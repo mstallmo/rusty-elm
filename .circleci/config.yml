@@ -12,7 +12,7 @@ workflows:
   version: 2
   install_and_build_client:
     jobs:
-      - install_client
-    filters:
-      branches:
-        only: master
+      - install_client:
+          filters:
+            branches:
+              only: master
