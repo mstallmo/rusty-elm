@@ -41,7 +41,7 @@ jobs:
       - run:
           name: Deploy to AWS
           command: |
-            aws s3 cp ~/rusty-elm/dist s3://rusty-elm --exclude "*" --include "*.wasm" --content-type application/wasm
+            aws s3 cp ~/rusty-elm/dist s3://rusty-elm --exclude "*" --include "*.wasm" --content-type application/wasm --recursive
             aws s3 cp ~/rusty-elm/dist s3://rusty-elm --exclude "*.wasm" --recursive
 
 workflows:
