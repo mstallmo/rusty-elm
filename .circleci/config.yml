@@ -1,0 +1,18 @@
+version: 2.1
+docker:
+  - image: mstallmo/client-build:latest
+jobs:
+  install:
+    steps:
+      - checkout
+      - run: |
+          npm i -g webpack webpack-cli
+          npm install
+workflows:
+  version: 2
+  install_and_build:
+    jobs:
+      - install
+    filters:
+      branches:
+        only: master
