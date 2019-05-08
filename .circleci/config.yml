@@ -28,6 +28,20 @@ jobs:
           name: Build Client
           command: |
             npm run build:client
+      - persist_to_workspace:
+          root: ~/rusty-elm
+          paths: .
+  deploy_client:
+    <<: *container_config
+    docker:
+      - image: mstallmo/client-build:latest
+    steps:
+      - attach_workspace:
+          at: ~/rusty-elm
+      -run:
+        name: Deploy to AWS
+        command: |
+          aws s3 cp ~/rusty-elm/dist s3://rusty-elm --recursive
 
 workflows:
   version: 2
@@ -40,6 +54,12 @@ workflows:
       - build_client:
           requires:
             - install_client
+          filters:
+            branches:
+              only: master
+      - deploy_client:
+          requires:
+            - build_client
           filters:
             branches:
               only: master
