@@ -39,9 +39,9 @@ jobs:
       - attach_workspace:
           at: ~/rusty-elm
       - run:
-        name: Deploy to AWS
-        command: |
-          aws s3 cp ~/rusty-elm/dist s3://rusty-elm --recursive
+          name: Deploy to AWS
+          command: |
+            aws s3 cp ~/rusty-elm/dist s3://rusty-elm --recursive
 
 workflows:
   version: 2
