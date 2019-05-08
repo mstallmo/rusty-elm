@@ -1,18 +1,45 @@
 version: 2.1
+container_config: &container_config
+  working_directory: ~/rusty-elm
+
 jobs:
   install_client:
+    <<: *container_config
     docker:
       - image: mstallmo/client-build:latest
     steps:
       - checkout
-      - run: |
-          npm i -g webpack webpack-cli
-          npm install
+      - run:
+          name: Install
+          command: |
+            npm i -g webpack webpack-cli
+            npm install
+      - persist_to_workspace:
+          root: ~/rusty-elm
+          paths: .
+  build_client:
+    <<: *container_config
+    docker:
+      - image: mstallmo/client-build:latest
+    steps:
+      - attach_workspace:
+          at: ~/rusty-elm
+      - run:
+          name: Build Client
+          command: |
+            npm run build:client
+
 workflows:
   version: 2
   install_and_build_client:
     jobs:
       - install_client:
+          filters:
+            branches:
+              only: master
+      - build_client:
+          requires:
+            - install_client
           filters:
             branches:
               only: master
