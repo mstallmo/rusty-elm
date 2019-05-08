@@ -46,7 +46,7 @@ jobs:
   build_server:
     <<: *container_config
     docker:
-      - iamge: mstallmo/server-build:latest
+      - image: mstallmo/server-build:latest
     steps:
       - checkout
       - run:
