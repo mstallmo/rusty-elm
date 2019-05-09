@@ -86,6 +86,7 @@ workflows:
             branches:
               only: master
       - build_server:
+          context: GLOBAL
           filters:
             branches:
               only: master
