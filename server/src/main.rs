@@ -52,7 +52,7 @@ fn main() -> std::io::Result<()> {
             )
             .service(fs::Files::new("/", "./dist/").index_file("index.html"))
     })
-    .bind("127.0.0.1:8081")
+    .bind(std::env::var("PORT"))
     .unwrap()
     .run()
 }

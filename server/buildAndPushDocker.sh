@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-$(aws ecr get-login --no-include-email --region us-east-1)
+docker login --username=_ --password=${HEROKU_AUTH_TOKEN} registry.heroku.com
 
-docker build . -t rusty-elm-server --build-arg DATABASE_URL=postgres://postgres:docker@localhost/rusty_elm
+docker build . -t registry.heroku.com/rusty-elm-server/web --build-arg DATABASE_URL=${DATABASE_URL}
 
-docker tag rusty-elm-server:latest 222747461323.dkr.ecr.us-east-1.amazonaws.com/rusty-elm-server:latest
-
-docker push 222747461323.dkr.ecr.us-east-1.amazonaws.com/rusty-elm-server:latest
+docker push registry.heroku.com/rusty-elm-server/web
