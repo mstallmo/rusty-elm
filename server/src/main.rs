@@ -52,7 +52,7 @@ fn main() -> std::io::Result<()> {
             )
             .service(fs::Files::new("/", "./dist/").index_file("index.html"))
     })
-    .bind(std::env::var("PORT"))
+    .bind(std::env::var("PORT").unwrap())
     .unwrap()
     .run()
 }
