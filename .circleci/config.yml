@@ -63,7 +63,7 @@ jobs:
           command: |
             npm run build:server
             cd server
-            ./buildDocker.sh
+            ./buildAndPushDocker.sh
 workflows:
   version: 2
   install_and_build_client:
