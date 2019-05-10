@@ -79,7 +79,6 @@ initialModel flags =
 type Msg
     = NoOp
     | SaveImage
-    | TestNewApi
     | GotText (Result Http.Error String)
     | SelectedFiles (List File)
     | SelectedFile String
@@ -104,9 +103,6 @@ update msg model =
                 , expect = Http.expectString GotText
                 }
             )
-
-        TestNewApi ->
-            ( model, Http.get { url = model.apiUrl ++ "/api/v1/hello", expect = Http.expectString GotText } )
 
         GotText result ->
             case result of
@@ -379,7 +375,7 @@ layerVisibilityToggle layers =
 saveElement : Model -> Element Msg
 saveElement model =
     row [ spacing 30, paddingXY 0 20 ]
-        [ testNewServerButton, fetchFromServerButton, fetchResultLabel model ]
+        [ fetchFromServerButton, fetchResultLabel model ]
 
 
 fetchResultLabel : Model -> Element msg
@@ -399,15 +395,3 @@ fetchFromServerButton =
         , centerY
         ]
         { onPress = Just SaveImage, label = text "Save" }
-
-
-testNewServerButton : Element Msg
-testNewServerButton =
-    Input.button
-        [ Border.solid
-        , Border.color (rgb255 0 0 0)
-        , Border.width 2
-        , Border.rounded 5
-        , padding 5
-        ]
-        { onPress = Just TestNewApi, label = text "Test the Heroku API" }

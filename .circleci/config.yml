@@ -81,7 +81,7 @@ jobs:
 
 workflows:
   version: 2
-  install_and_build_client:
+  install_build_and_deploy_client:
     jobs:
       - install_client:
           filters:
