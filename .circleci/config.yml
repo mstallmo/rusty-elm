@@ -69,6 +69,8 @@ jobs:
           paths: .
   deploy_server:
     <<: *container_config
+    docker:
+      - image: mstallmo/server-build:latest
     steps:
       - run:
           name: Deploy Container to Heroku
