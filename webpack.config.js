@@ -2,6 +2,8 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin/plugin");
 const dist = path.resolve(__dirname, "dist");
+const webpack = require("webpack");
+require("dotenv").config();
 
 const PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -30,6 +32,8 @@ module.exports = {
       // WasmPackPlugin defaults to compiling in "dev" profile. To change that, use forceMode: 'release':
       forceMode: (PRODUCTION) ? 'release' : ''
     }),
+
+    new webpack.EnvironmentPlugin(["API_URL"])
   ],
   module: {
     rules: [

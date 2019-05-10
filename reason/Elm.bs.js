@@ -7,7 +7,8 @@ function init(prim) {
 }
 
 var newApp = MainElm.Elm.Main.init({
-      node: document.getElementById("elm")
+      node: document.getElementById("elm"),
+      flags: process.env.API_URL
     });
 
 var Ports = /* module */[];

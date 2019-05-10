@@ -12,3 +12,4 @@ server/target
 .merlin
 .bsb.lock
 /lib/bs/
+.env

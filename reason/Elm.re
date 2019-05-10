@@ -6,14 +6,19 @@ type document;
 [@bs.send] external getElementById: (document, string) => Dom.element = "";
 [@bs.val] external doc: document = "document";
 
+[@bs.val] [@bs.scope ("process", "env")] external apiUrl: string = "API_URL";
+
 [@bs.deriving abstract]
-type elmInit = {node: Dom.element};
+type elmInit = {
+  node: Dom.element,
+  flags: string,
+};
 
 type app;
 [@bs.module "../elm/Main.elm"] [@bs.scope ("Elm", "Main")]
 external init: elmInit => app = "";
 
-let newApp = init(elmInit(~node=getElementById(doc, "elm")));
+let newApp = init(elmInit(~node=getElementById(doc, "elm"), ~flags=apiUrl));
 
 module Ports = {
   [@bs.send] [@bs.scope ("ports", "openPSDDocument")]

@@ -16,9 +16,9 @@ import List
 import Task
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
-    Browser.element { init = \() -> initialModel, view = view, update = update, subscriptions = subscriptions }
+    Browser.element { init = initialModel, view = view, update = update, subscriptions = subscriptions }
 
 
 
@@ -60,12 +60,16 @@ type alias Document =
 
 
 type alias Model =
-    { count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String, activeDocument : Document }
+    { apiUrl : String, count : Int, serverResponse : String, selectedFiles : SelectedFiles, selectedFile : String, activeDocument : Document }
 
 
-initialModel : ( Model, Cmd Msg )
-initialModel =
-    ( { count = 0, serverResponse = "", selectedFiles = [], selectedFile = "", activeDocument = { width = 0, height = 0, layers = [] } }, Cmd.none )
+type alias Flags =
+    String
+
+
+initialModel : Flags -> ( Model, Cmd Msg )
+initialModel flags =
+    ( { apiUrl = flags, count = 0, serverResponse = "", selectedFiles = [], selectedFile = "", activeDocument = { width = 0, height = 0, layers = [] } }, Cmd.none )
 
 
 
@@ -75,6 +79,7 @@ initialModel =
 type Msg
     = NoOp
     | SaveImage
+    | TestNewApi
     | GotText (Result Http.Error String)
     | SelectedFiles (List File)
     | SelectedFile String
@@ -88,7 +93,7 @@ update msg model =
         SaveImage ->
             ( model
             , Http.post
-                { url = "http://localhost:8081/api/v1/saveImage"
+                { url = model.apiUrl ++ "/api/v1/saveImage"
                 , body =
                     Http.jsonBody
                         (Json.Encode.object
@@ -99,6 +104,9 @@ update msg model =
                 , expect = Http.expectString GotText
                 }
             )
+
+        TestNewApi ->
+            ( model, Http.get { url = model.apiUrl ++ "/api/v1/hello", expect = Http.expectString GotText } )
 
         GotText result ->
             case result of
@@ -260,11 +268,7 @@ mapActiveDocument documentJson =
         Ok document ->
             ActiveDocument document
 
-        Err errorMessage ->
---            let
---                _ =
---                    Debug.log "Error in mapActiveDocument:" errorMessage
---            in
+        Err _ ->
             NoOp
 
 
@@ -375,7 +379,7 @@ layerVisibilityToggle layers =
 saveElement : Model -> Element Msg
 saveElement model =
     row [ spacing 30, paddingXY 0 20 ]
-        [ fetchFromServerButton, fetchResultLabel model ]
+        [ testNewServerButton, fetchFromServerButton, fetchResultLabel model ]
 
 
 fetchResultLabel : Model -> Element msg
@@ -395,3 +399,15 @@ fetchFromServerButton =
         , centerY
         ]
         { onPress = Just SaveImage, label = text "Save" }
+
+
+testNewServerButton : Element Msg
+testNewServerButton =
+    Input.button
+        [ Border.solid
+        , Border.color (rgb255 0 0 0)
+        , Border.width 2
+        , Border.rounded 5
+        , padding 5
+        ]
+        { onPress = Just TestNewApi, label = text "Test the Heroku API" }
