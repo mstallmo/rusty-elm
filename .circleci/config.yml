@@ -64,6 +64,17 @@ jobs:
             npm run build:server
             cd server
             ./buildAndPushDocker.sh
+      - persist_to_workspace:
+          root: ~/rusty-elm
+          paths: .
+  deploy_server:
+    <<: *container_config
+    steps:
+      - run:
+          name: Deploy Container to Heroku
+          command: |
+            heroku container:release web -a rusty-elm
+
 workflows:
   version: 2
   install_and_build_client:
@@ -85,7 +96,14 @@ workflows:
           filters:
             branches:
               only: master
+  build_and_deploy_server:
+    jobs:
       - build_server:
+          context: GLOBAL
+          filters:
+            branches:
+              only: master
+      - deploy_server:
           context: GLOBAL
           filters:
             branches:
