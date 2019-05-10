@@ -107,6 +107,8 @@ workflows:
               only: master
       - deploy_server:
           context: GLOBAL
+          requires:
+            - build_server
           filters:
             branches:
               only: master
