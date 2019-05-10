@@ -26,6 +26,7 @@ fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create pool");
 
+    let port = std::env::var("PORT").unwrap_or("8081".to_owned());
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
@@ -52,7 +53,7 @@ fn main() -> std::io::Result<()> {
             )
             .service(fs::Files::new("/", "./dist/").index_file("index.html"))
     })
-    .bind(std::env::var("PORT").unwrap())
+    .bind(format!("0.0.0.0:{}", port))
     .unwrap()
     .run()
 }
