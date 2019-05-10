@@ -72,6 +72,8 @@ jobs:
     docker:
       - image: mstallmo/server-build:latest
     steps:
+      - attach_workspace:
+          at: ~/rusty-elm
       - run:
           name: Deploy Container to Heroku
           command: |
