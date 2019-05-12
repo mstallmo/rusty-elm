@@ -34,3 +34,20 @@ let getActiveFile: string => string = [%raw
         return canvas.toDataURL();
     }|}
 ];
+
+let decodeImage: (string, Js.Typed_array.Uint8ClampedArray.t => unit) => unit = [%raw
+  {|(dataUrl, cb) => {
+        const image = new Image();
+        image.src = dataUrl;
+
+        const canvas = new OffscreenCanvas(image.width, image.height);
+        const ctx = canvas.getContext('2d');
+
+        image.decode()
+            .then(() => {
+                 ctx.drawImage(image, 0, 0);
+                 const imageData = ctx.getImageData(0, 0, image.width, image.height);
+                 cb(imageData);
+            });
+    }|}
+];

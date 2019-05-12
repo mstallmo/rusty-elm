@@ -34,7 +34,7 @@ subscriptions _ =
 -- PORTS
 
 
-port openPSDDocument : String -> Cmd a
+port openFile : String -> Cmd a
 
 
 port documentUpdated : (Json.Decode.Value -> msg) -> Sub msg
@@ -116,7 +116,7 @@ update msg model =
             ( { model | selectedFiles = files }, List.head files |> extractFile )
 
         SelectedFile file ->
-            ( { model | selectedFile = file }, openPSDDocument file )
+            ( { model | selectedFile = file }, openFile file )
 
         ActiveDocument document ->
             ( { model | activeDocument = document }, encodeAndRenderLayers document.layers )

@@ -30,11 +30,27 @@ var getActiveFile = ((id) => {
         return canvas.toDataURL();
     });
 
+var decodeImage = ((dataUrl, cb) => {
+        const image = new Image();
+        image.src = dataUrl;
+
+        const canvas = new OffscreenCanvas(image.width, image.height);
+        const ctx = canvas.getContext('2d');
+
+        image.decode()
+            .then(() => {
+                 ctx.drawImage(image, 0, 0);
+                 const imageData = ctx.getImageData(0, 0, image.width, image.height);
+                 cb(imageData);
+            });
+    });
+
 export {
   renderImageWithDataUrl ,
   renderPsd ,
   clearCanvas ,
   getActiveFile ,
+  decodeImage ,
   
 }
 /* renderImageWithDataUrl Not a pure module */

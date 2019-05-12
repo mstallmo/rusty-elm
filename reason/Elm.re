@@ -21,8 +21,8 @@ external init: elmInit => app = "";
 let newApp = init(elmInit(~node=getElementById(doc, "elm"), ~flags=apiUrl));
 
 module Ports = {
-  [@bs.send] [@bs.scope ("ports", "openPSDDocument")]
-  external openPSDDocument: (app, string => unit) => unit = "subscribe";
+  [@bs.send] [@bs.scope ("ports", "openFile")]
+  external openFile: (app, string => unit) => unit = "subscribe";
 
   [@bs.send] [@bs.scope ("ports", "renderLayers")]
   external renderLayers: (app, array(Psd.layer) => unit) => unit =
