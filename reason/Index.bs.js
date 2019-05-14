@@ -37,7 +37,6 @@ Elm$ReasonableRustyElm.newApp.ports.openFile.subscribe((function (imageUrl) {
           return /* () */0;
         } else {
           return Curry._2(Render$ReasonableRustyElm.decodeImage, imageUrl, (function (layer) {
-                        console.log(layer);
                         Elm$ReasonableRustyElm.newApp.ports.addNewLayer.send(layer);
                         return /* () */0;
                       }));
