@@ -30,4 +30,7 @@ module Ports = {
 
   [@bs.send] [@bs.scope ("ports", "documentUpdated")]
   external documentUpdated: (app, Psd.document) => unit = "send";
+
+  [@bs.send] [@bs.scope ("ports", "addNewLayer")]
+  external addNewLayer: (app, Psd.layer) => unit = "send";
 };

@@ -36,8 +36,9 @@ Elm$ReasonableRustyElm.newApp.ports.openFile.subscribe((function (imageUrl) {
           Elm$ReasonableRustyElm.newApp.ports.documentUpdated.send($$document);
           return /* () */0;
         } else {
-          return Curry._2(Render$ReasonableRustyElm.decodeImage, imageUrl, (function (imageData) {
-                        console.log(imageData);
+          return Curry._2(Render$ReasonableRustyElm.decodeImage, imageUrl, (function (layer) {
+                        console.log(layer);
+                        Elm$ReasonableRustyElm.newApp.ports.addNewLayer.send(layer);
                         return /* () */0;
                       }));
         }
@@ -47,7 +48,7 @@ Elm$ReasonableRustyElm.newApp.ports.renderLayers.subscribe((function (layers) {
         $$Array.map((function (layer) {
                 if (layer.visible === true) {
                   var clampedArrayBuffer = fillClampedArrayFromArray(layer.image, new Uint8ClampedArray(layer.image.length));
-                  return Curry._2(Render$ReasonableRustyElm.renderPsd, layer.name, new ImageData(clampedArrayBuffer, 500, 500));
+                  return Curry._2(Render$ReasonableRustyElm.renderPsd, layer.name, new ImageData(clampedArrayBuffer, layer.width, layer.height));
                 } else {
                   return Curry._1(Render$ReasonableRustyElm.clearCanvas, layer.name);
                 }

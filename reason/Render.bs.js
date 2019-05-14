@@ -34,15 +34,17 @@ var decodeImage = ((dataUrl, cb) => {
         const image = new Image();
         image.src = dataUrl;
 
-        const canvas = new OffscreenCanvas(image.width, image.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = '500';
+        canvas.height = '500';
         const ctx = canvas.getContext('2d');
 
-        image.decode()
-            .then(() => {
-                 ctx.drawImage(image, 0, 0);
-                 const imageData = ctx.getImageData(0, 0, image.width, image.height);
-                 cb(imageData);
-            });
+        image.onload = () => {
+             ctx.drawImage(image, 0, 0);
+             const imageData = ctx.getImageData(0, 0, 500, 500);
+             console.log(imageData);
+             cb({ name: "newImage", image: Array.from(imageData.data), width: 500, height: 500, layerIdx: 2, visible: true});
+        }
     });
 
 export {

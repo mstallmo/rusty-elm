@@ -27,7 +27,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    documentUpdated mapActiveDocument
+    Sub.batch [ documentUpdated mapActiveDocument, addNewLayer mapNewLayer ]
 
 
 
@@ -41,6 +41,9 @@ port documentUpdated : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port renderLayers : List Json.Encode.Value -> Cmd a
+
+
+port addNewLayer : (Json.Decode.Value -> msg) -> Sub msg
 
 
 
@@ -84,6 +87,7 @@ type Msg
     | SelectedFile String
     | ActiveDocument Document
     | ToggleVisibility ( Int, Bool )
+    | NewLayer Layer
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -142,6 +146,19 @@ update msg model =
             in
             ( { model | activeDocument = newActiveDocument }, encodeAndRenderLayers newActiveDocument.layers )
 
+        NewLayer layer ->
+            let
+                activeDocument =
+                    model.activeDocument
+
+                updatedLayers =
+                    activeDocument.layers ++ List.singleton layer
+
+                newActiveDocument =
+                    { activeDocument | layers = updatedLayers }
+            in
+            ( { model | activeDocument = newActiveDocument }, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -154,6 +171,10 @@ extractFile maybeFile =
 
         Nothing ->
             Cmd.none
+
+
+
+-- JSON Encoder/Decoder
 
 
 encodeAndRenderLayers : List Layer -> Cmd Msg
@@ -273,6 +294,25 @@ decodeDocument activeDocument =
     Json.Decode.decodeValue documentDecoder activeDocument
 
 
+mapNewLayer : Json.Decode.Value -> Msg
+mapNewLayer layerJson =
+    case decodeLayer layerJson of
+        Ok layer ->
+            NewLayer layer
+
+        Err error ->
+            let
+                _ =
+                    Debug.log "error: " error
+            in
+            NoOp
+
+
+decodeLayer : Json.Decode.Value -> Result Json.Decode.Error Layer
+decodeLayer newLayer =
+    Json.Decode.decodeValue layerDecoder newLayer
+
+
 
 -- VIEW
 
@@ -286,6 +326,7 @@ view model =
                 [ toolbar
                 , imageColumn model
                 , layerVisibilityColumn model
+                , html <| canvas [ id "test-canvas", width 500, height 500 ] []
                 ]
             ]
 
@@ -328,7 +369,7 @@ splitLayers : List Layer -> List (Element Msg)
 splitLayers layers =
     case layers of
         first :: rest ->
-            List.append [ html <| canvas [ id first.name, width 500, height 500 ] [] ] (mapCanvasLayers rest)
+            List.append [ html <| canvas [ id first.name, width first.width, height first.height ] [] ] (mapCanvasLayers rest)
 
         _ ->
             mapCanvasLayers layers
@@ -341,8 +382,8 @@ mapCanvasLayers layers =
             html <|
                 canvas
                     [ id element.name
-                    , width 500
-                    , height 500
+                    , width element.width
+                    , height element.height
                     , style "position" "absolute"
                     , style "z-index" (String.fromInt element.layerIdx)
                     , style "left" "0"

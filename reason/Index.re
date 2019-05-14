@@ -40,8 +40,12 @@ Elm.Ports.openFile(
         |> Psd.parsePsd;
       Elm.Ports.documentUpdated(Elm.newApp, document);
     } else {
-      Render.decodeImage(imageUrl, (imageData: Uint8ClampedArray.t) =>
-        Js.log(imageData)
+      Render.decodeImage(
+        imageUrl,
+        (layer: Psd.layer) => {
+          Js.log(layer);
+          Elm.Ports.addNewLayer(Elm.newApp, layer);
+        },
       );
     };
   },
@@ -62,8 +66,8 @@ Elm.Ports.renderLayers(
               layer##name,
               Webapi.Dom.Image.makeWithData(
                 ~array=clampedArrayBuffer,
-                ~width=Js.Int.toFloat(500),
-                ~height=Js.Int.toFloat(500),
+                ~width=Js.Int.toFloat(layer##width),
+                ~height=Js.Int.toFloat(layer##height),
               ),
             );
           } else {

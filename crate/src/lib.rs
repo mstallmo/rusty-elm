@@ -47,8 +47,8 @@ pub struct Document {
 pub struct Layer {
     name: String,
     image: Vec<u8>,
-    width: u16,
-    height: u16,
+    width: u32,
+    height: u32,
     #[allow(non_snake_case)]
     layerIdx: usize,
     visible: bool
@@ -62,8 +62,8 @@ fn split_to_layers(document: &psd::Psd) -> Vec<Layer> {
         .map(|(layer_idx, layer)| Layer {
             name: layer.name().to_owned(),
             image: layer.rgba().unwrap(),
-            width: layer.width(),
-            height: layer.height(),
+            width: document.width(),
+            height: document.height(),
             layerIdx: layer_idx,
             visible: true
         })
