@@ -40,12 +40,8 @@ Elm.Ports.openFile(
         |> Psd.parsePsd;
       Elm.Ports.documentUpdated(Elm.newApp, document);
     } else {
-      Render.decodeImage(
-        imageUrl,
-        (layer: Psd.layer) => {
-          Js.log(layer);
-          Elm.Ports.addNewLayer(Elm.newApp, layer);
-        },
+      Render.decodeImage(imageUrl, (layer: Psd.layer) =>
+        Elm.Ports.addNewLayer(Elm.newApp, layer)
       );
     };
   },

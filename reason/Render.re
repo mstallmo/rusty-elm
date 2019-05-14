@@ -41,15 +41,14 @@ let decodeImage: (string, Psd.layer => unit) => unit = [%raw
         image.src = dataUrl;
 
         const canvas = document.createElement('canvas');
-        canvas.width = '500';
-        canvas.height = '500';
+        canvas.width = '1280';
+        canvas.height = '720';
         const ctx = canvas.getContext('2d');
 
         image.onload = () => {
              ctx.drawImage(image, 0, 0);
-             const imageData = ctx.getImageData(0, 0, 500, 500);
-             console.log(imageData);
-             cb({ name: "newImage", image: Array.from(imageData.data), width: 500, height: 500, layerIdx: 2, visible: true});
+             const imageData = ctx.getImageData(0, 0, 1280, 720);
+             cb({ name: "newImage", image: Array.from(imageData.data), width: 1280, height: 720, layerIdx: 2, visible: true});
         }
     }|}
 ];

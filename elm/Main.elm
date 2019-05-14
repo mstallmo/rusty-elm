@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Element exposing (Element, alignTop, centerY, column, el, html, htmlAttribute, padding, paddingXY, rgb255, row, spacing, text)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import Element.Region as Region
@@ -300,11 +301,7 @@ mapNewLayer layerJson =
         Ok layer ->
             NewLayer layer
 
-        Err error ->
-            let
-                _ =
-                    Debug.log "error: " error
-            in
+        Err _ ->
             NoOp
 
 
@@ -324,9 +321,13 @@ view model =
             [ elementRow model
             , row [ spacing 20, padding 20 ]
                 [ toolbar
-                , imageColumn model
+                , el
+                    [ Background.color (rgb255 128 128 128)
+                    , Element.width (Element.px 1280)
+                    , Element.height (Element.px 720)
+                    ]
+                    (imageColumn model)
                 , layerVisibilityColumn model
-                , html <| canvas [ id "test-canvas", width 500, height 500 ] []
                 ]
             ]
 
@@ -382,8 +383,8 @@ mapCanvasLayers layers =
             html <|
                 canvas
                     [ id element.name
-                    , width element.width
-                    , height element.height
+                    , width 1280
+                    , height 720
                     , style "position" "absolute"
                     , style "z-index" (String.fromInt element.layerIdx)
                     , style "left" "0"
