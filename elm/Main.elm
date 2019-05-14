@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Element exposing (Element, alignTop, centerY, column, el, html, htmlAttribute, padding, paddingXY, rgb255, row, spacing, text)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import Element.Region as Region
@@ -27,20 +28,23 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    documentUpdated mapActiveDocument
+    Sub.batch [ documentUpdated mapActiveDocument, addNewLayer mapNewLayer ]
 
 
 
 -- PORTS
 
 
-port openPSDDocument : String -> Cmd a
+port openFile : String -> Cmd a
 
 
 port documentUpdated : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port renderLayers : List Json.Encode.Value -> Cmd a
+
+
+port addNewLayer : (Json.Decode.Value -> msg) -> Sub msg
 
 
 
@@ -84,6 +88,7 @@ type Msg
     | SelectedFile String
     | ActiveDocument Document
     | ToggleVisibility ( Int, Bool )
+    | NewLayer Layer
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,7 +121,7 @@ update msg model =
             ( { model | selectedFiles = files }, List.head files |> extractFile )
 
         SelectedFile file ->
-            ( { model | selectedFile = file }, openPSDDocument file )
+            ( { model | selectedFile = file }, openFile file )
 
         ActiveDocument document ->
             ( { model | activeDocument = document }, encodeAndRenderLayers document.layers )
@@ -142,6 +147,19 @@ update msg model =
             in
             ( { model | activeDocument = newActiveDocument }, encodeAndRenderLayers newActiveDocument.layers )
 
+        NewLayer layer ->
+            let
+                activeDocument =
+                    model.activeDocument
+
+                updatedLayers =
+                    activeDocument.layers ++ List.singleton layer
+
+                newActiveDocument =
+                    { activeDocument | layers = updatedLayers }
+            in
+            ( { model | activeDocument = newActiveDocument }, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -154,6 +172,10 @@ extractFile maybeFile =
 
         Nothing ->
             Cmd.none
+
+
+
+-- JSON Encoder/Decoder
 
 
 encodeAndRenderLayers : List Layer -> Cmd Msg
@@ -273,6 +295,21 @@ decodeDocument activeDocument =
     Json.Decode.decodeValue documentDecoder activeDocument
 
 
+mapNewLayer : Json.Decode.Value -> Msg
+mapNewLayer layerJson =
+    case decodeLayer layerJson of
+        Ok layer ->
+            NewLayer layer
+
+        Err _ ->
+            NoOp
+
+
+decodeLayer : Json.Decode.Value -> Result Json.Decode.Error Layer
+decodeLayer newLayer =
+    Json.Decode.decodeValue layerDecoder newLayer
+
+
 
 -- VIEW
 
@@ -284,7 +321,12 @@ view model =
             [ elementRow model
             , row [ spacing 20, padding 20 ]
                 [ toolbar
-                , imageColumn model
+                , el
+                    [ Background.color (rgb255 128 128 128)
+                    , Element.width (Element.px 1280)
+                    , Element.height (Element.px 720)
+                    ]
+                    (imageColumn model)
                 , layerVisibilityColumn model
                 ]
             ]
@@ -328,7 +370,7 @@ splitLayers : List Layer -> List (Element Msg)
 splitLayers layers =
     case layers of
         first :: rest ->
-            List.append [ html <| canvas [ id first.name, width 500, height 500 ] [] ] (mapCanvasLayers rest)
+            List.append [ html <| canvas [ id first.name, width first.width, height first.height ] [] ] (mapCanvasLayers rest)
 
         _ ->
             mapCanvasLayers layers
@@ -341,8 +383,8 @@ mapCanvasLayers layers =
             html <|
                 canvas
                     [ id element.name
-                    , width 500
-                    , height 500
+                    , width 1280
+                    , height 720
                     , style "position" "absolute"
                     , style "z-index" (String.fromInt element.layerIdx)
                     , style "left" "0"

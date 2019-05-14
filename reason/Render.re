@@ -34,3 +34,21 @@ let getActiveFile: string => string = [%raw
         return canvas.toDataURL();
     }|}
 ];
+
+let decodeImage: (string, Psd.layer => unit) => unit = [%raw
+  {|(dataUrl, cb) => {
+        const image = new Image();
+        image.src = dataUrl;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = '1280';
+        canvas.height = '720';
+        const ctx = canvas.getContext('2d');
+
+        image.onload = () => {
+             ctx.drawImage(image, 0, 0);
+             const imageData = ctx.getImageData(0, 0, 1280, 720);
+             cb({ name: "newImage", image: Array.from(imageData.data), width: 1280, height: 720, layerIdx: 2, visible: true});
+        }
+    }|}
+];

@@ -1,5 +1,10 @@
 open Js.Typed_array;
 
+type file = {
+  fileType: string,
+  fileContents: string,
+};
+
 let fillArrayBufferFromString =
     (decodedString: string, arrayBuffer: Uint8Array.t) => {
   Uint8Array.mapi(
@@ -13,19 +18,32 @@ let fillClampedArrayFromArray =
   Uint8ClampedArray.mapi((. _, index) => inputArray[index], arrayBuffer);
 };
 
-Elm.Ports.openPSDDocument(
+let splitFileBodyAndHeader = (fileUrl: string) => {
+  let splitFile = Js.String.split(",", fileUrl);
+  let fileType = splitFile->Array.get(0) |> Js.String.split(";");
+
+  {fileType: fileType->Array.get(0), fileContents: splitFile->Array.get(1)};
+};
+
+Elm.Ports.openFile(
   Elm.newApp,
   (imageUrl: string) => {
-    let decodedString =
-      Js.String.split(",", imageUrl)->Array.get(1) |> Webapi.Base64.atob;
+    let parsedFile = splitFileBodyAndHeader(imageUrl);
 
-    let document =
-      Js.String.length(decodedString)
-      |> Uint8Array.fromLength
-      |> fillArrayBufferFromString(decodedString)
-      |> Psd.parsePsd;
+    if (parsedFile.fileType == "data:image/vnd.adobe.photoshop") {
+      let decodedString = parsedFile.fileContents |> Webapi.Base64.atob;
 
-    Elm.Ports.documentUpdated(Elm.newApp, document);
+      let document =
+        Js.String.length(decodedString)
+        |> Uint8Array.fromLength
+        |> fillArrayBufferFromString(decodedString)
+        |> Psd.parsePsd;
+      Elm.Ports.documentUpdated(Elm.newApp, document);
+    } else {
+      Render.decodeImage(imageUrl, (layer: Psd.layer) =>
+        Elm.Ports.addNewLayer(Elm.newApp, layer)
+      );
+    };
   },
 );
 
@@ -44,8 +62,8 @@ Elm.Ports.renderLayers(
               layer##name,
               Webapi.Dom.Image.makeWithData(
                 ~array=clampedArrayBuffer,
-                ~width=Js.Int.toFloat(500),
-                ~height=Js.Int.toFloat(500),
+                ~width=Js.Int.toFloat(layer##width),
+                ~height=Js.Int.toFloat(layer##height),
               ),
             );
           } else {

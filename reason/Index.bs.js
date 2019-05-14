@@ -19,18 +19,36 @@ function fillClampedArrayFromArray(inputArray, arrayBuffer) {
               }));
 }
 
-Elm$ReasonableRustyElm.newApp.ports.openPSDDocument.subscribe((function (imageUrl) {
-        var decodedString = atob(Caml_array.caml_array_get(imageUrl.split(","), 1));
-        var $$document = Psd$ReasonableRustyElm.parsePsd(fillArrayBufferFromString(decodedString, new Uint8Array(decodedString.length)));
-        Elm$ReasonableRustyElm.newApp.ports.documentUpdated.send($$document);
-        return /* () */0;
+function splitFileBodyAndHeader(fileUrl) {
+  var splitFile = fileUrl.split(",");
+  var fileType = Caml_array.caml_array_get(splitFile, 0).split(";");
+  return /* record */[
+          /* fileType */Caml_array.caml_array_get(fileType, 0),
+          /* fileContents */Caml_array.caml_array_get(splitFile, 1)
+        ];
+}
+
+Elm$ReasonableRustyElm.newApp.ports.openFile.subscribe((function (imageUrl) {
+        var parsedFile = splitFileBodyAndHeader(imageUrl);
+        if (parsedFile[/* fileType */0] === "data:image/vnd.adobe.photoshop") {
+          var decodedString = atob(parsedFile[/* fileContents */1]);
+          var $$document = Psd$ReasonableRustyElm.parsePsd(fillArrayBufferFromString(decodedString, new Uint8Array(decodedString.length)));
+          Elm$ReasonableRustyElm.newApp.ports.documentUpdated.send($$document);
+          return /* () */0;
+        } else {
+          return Curry._2(Render$ReasonableRustyElm.decodeImage, imageUrl, (function (layer) {
+                        console.log(layer);
+                        Elm$ReasonableRustyElm.newApp.ports.addNewLayer.send(layer);
+                        return /* () */0;
+                      }));
+        }
       }));
 
 Elm$ReasonableRustyElm.newApp.ports.renderLayers.subscribe((function (layers) {
         $$Array.map((function (layer) {
                 if (layer.visible === true) {
                   var clampedArrayBuffer = fillClampedArrayFromArray(layer.image, new Uint8ClampedArray(layer.image.length));
-                  return Curry._2(Render$ReasonableRustyElm.renderPsd, layer.name, new ImageData(clampedArrayBuffer, 500, 500));
+                  return Curry._2(Render$ReasonableRustyElm.renderPsd, layer.name, new ImageData(clampedArrayBuffer, layer.width, layer.height));
                 } else {
                   return Curry._1(Render$ReasonableRustyElm.clearCanvas, layer.name);
                 }
@@ -41,6 +59,7 @@ Elm$ReasonableRustyElm.newApp.ports.renderLayers.subscribe((function (layers) {
 export {
   fillArrayBufferFromString ,
   fillClampedArrayFromArray ,
+  splitFileBodyAndHeader ,
   
 }
 /*  Not a pure module */
